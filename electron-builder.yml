@@ -58,14 +58,14 @@ linux:
         - arm64
     - deb
     - tar.gz
-  maintainer: npc-riddlah
+  maintainer: radioPABM
   category: AudioVideo
-  synopsis: 'radopPABM Client build atop of Aonsoku'
+  synopsis: 'radioPABM Client build atop of Aonsoku'
 
 npmRebuild: true
 nativeRebuilder: legacy
 
 publish:
   provider: github
-  owner: npc-riddlah
+  owner: radioPABM
   repo: aonsoku

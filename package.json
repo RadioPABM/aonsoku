@@ -4,7 +4,7 @@
   "version": "0.0.3",
   "description": "radioPABM Client based on Aonsoku",
   "author": {
-    "name": "Victor Alves & PABM"
+    "name": "Victor Alves & radioPABM"
   },
   "main": "./out/main/index.js",
   "type": "module",
@@ -33,7 +33,7 @@
     "prepare": "husky"
   },
   "repository": {
-    "url": "https://github.com/npc-riddlah/aonsoku"
+    "url": "https://github.com/radioPABM/aonsoku"
   },
   "dependencies": {
     "@chriscodesthings/random-css-hex-color": "^1.1.0",
