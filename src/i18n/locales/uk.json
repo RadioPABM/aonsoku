@@ -217,8 +217,14 @@
     }
   },
   "playlist": {
-    "duration": "приблизно {{duration}}",
+    "headline": "Плейлист",
     "refresh": "Оновити плейлисти",
+    "buttons": {
+      "play": "Слухати {{name}}",
+      "shuffle": "Слухати {{name}} у випадковому порядку",
+      "options": "Більше для {{name}}"
+    },
+    "duration": "приблизно {{duration}}",
     "form": {
       "create": {
         "title": "Створити плейлист",
@@ -269,16 +275,10 @@
         "title_many": "Ви впевнені, що хочете видалити обрані треки??"
       }
     },
-    "buttons": {
-      "play": "Слухати {{name}}",
-      "shuffle": "Слухати {{name}} у випадковому порядку",
-      "options": "Більше для {{name}}"
-    },
     "noSongList": "Цей плейлист не містить треків!",
     "songCount_one": "{{count}} трек",
     "songCount_few": "{{count}} трека",
-    "songCount_many": "{{count}} треків",
-    "headline": "Плейлист"
+    "songCount_many": "{{count}} треків"
   },
   "songs": {
     "list": {
@@ -743,6 +743,33 @@
           "info": "Для пошуку текстів пісень використовується LRCLIB."
         },
         "description": "Керувати зовнішніми сервісами, до яких Aonsoku має доступ."
+      },
+      "menu": {
+        "server": "Сервер",
+        "about": "Про додаток",
+        "serverLogout": "Вийти",
+        "language": "Мова"
+      },
+      "theme": {
+        "label": "Тема",
+        "system": "Системна",
+        "black": "Чорно-біла",
+        "dark": "Темна",
+        "one-dark": "Темна ніч",
+        "light": "Світла",
+        "vue-dark": "Vue Dark",
+        "vim-dark-soft": "Vim Dark Soft",
+        "night-owl-light": "Світло нічної сови",
+        "marmalade-beaver": "Повидловий бобер",
+        "noctis-lilac": "Сутінковий бузок",
+        "albumCount_one": "{{count}} альбом",
+        "albumCount_few": "{{count}} альбоми",
+        "albumCount_many": "{{count}} альбомів",
+        "albumCount_other": "{{count}} альбомів",
+        "buttons": {
+          "shuffleTracks": "Перемішати треки",
+          "shuffleAlbums": "Перемішати альбоми"
+        }
       }
     }
   }
