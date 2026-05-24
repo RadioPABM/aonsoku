@@ -84,14 +84,6 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
 
   return (
     <Actions.Container>
-    <Actions.Button
-    tooltip={buttonsTooltips.play}
-    buttonStyle="primary"
-    onClick={() => setSongList(album.song, 0)}
-    >
-    <Actions.PlayIcon />
-    </Actions.Button>
-
     {album.song.length > 1 && (
       <Actions.Button
         tooltip={buttonsTooltips.play}
