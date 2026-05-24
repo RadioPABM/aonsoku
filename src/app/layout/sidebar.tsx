@@ -19,7 +19,6 @@ const Radio = memo(RadioIcon)
 const Home = memo(HomeIcon)
 const Library = memo(LibraryIcon)
 const Podcast = memo(PodcastIcon)
-//const Heart = memo(HeartIcon)
 const Tags = memo(TagsIcon)
 
 export interface ISidebarItem {
@@ -32,7 +31,6 @@ export interface ISidebarItem {
 export enum SidebarItems {
   Home = 'home',
   Artists = 'artists',
-  LovedSongs = 'lovedsongs',
   Songs = 'songs',
   Albums = 'albums',
   Genres = 'genres',
@@ -54,12 +52,6 @@ export const mainNavItems = [
 ]
 
 export const libraryItems = [
-  {
-    id: SidebarItems.LovedSongs,
-    title: 'sidebar.lovedsongs',
-    route: ROUTES.LIBRARY.LOVEDSONGS,
-    icon: Heart,
-  },
   {
     id: SidebarItems.Artists,
     title: 'sidebar.artists',
