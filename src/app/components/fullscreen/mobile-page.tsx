@@ -36,7 +36,7 @@ export function MobileFullscreenMode() {
       open={isFullscreen}
       onOpenChange={setIsFullscreen}
       fixed={true}
-      handleOnly={true}
+      handleOnly={false}
       disablePreventScroll={true}
       dismissible={true}
       modal={false}
@@ -50,6 +50,9 @@ export function MobileFullscreenMode() {
         <FullscreenBackdrop />
 
         <div className="absolute inset-0 z-10 flex flex-col px-5 pt-2 pb-[calc(1rem+var(--mobile-safe-bottom))] bg-black/0">
+          {/* Grabber: the sheet can also be swiped down to close */}
+          <div className="mx-auto mb-1 h-1.5 w-10 shrink-0 rounded-full bg-foreground/30" />
+
           <div className="h-12 min-h-12 flex items-center justify-start">
             <Button
               variant="ghost"

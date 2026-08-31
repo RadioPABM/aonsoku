@@ -34,6 +34,7 @@ module.exports = {
         'mobile-player': 'var(--mobile-player-height)',
         'mobile-content': 'var(--mobile-content-height)',
         'mobile-safe-bottom': 'var(--mobile-safe-bottom)',
+        'mobile-safe-top': 'var(--mobile-safe-top)',
       },
       colors: {
         border: 'hsl(var(--border))',

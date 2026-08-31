@@ -26,7 +26,7 @@ const CommandDialog = ({ children, ...props }: DialogProps) => {
     <Dialog {...props}>
       <DialogTitle className="sr-only">Search Dialog</DialogTitle>
       <DialogContent
-        className="overflow-hidden p-0 shadow-lg bg-transparent w-[calc(100%-1.5rem)] md:w-full"
+        className="overflow-hidden p-0 shadow-lg bg-transparent w-[calc(100%-1.5rem)] md:w-full top-4 translate-y-0 md:top-[50%] md:translate-y-[-50%]"
         aria-describedby={undefined}
       >
         {children}
@@ -45,7 +45,7 @@ const CommandInput = React.forwardRef<
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        'flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+        'flex h-12 md:h-11 w-full rounded-md bg-transparent py-3 text-base md:text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}
       {...props}

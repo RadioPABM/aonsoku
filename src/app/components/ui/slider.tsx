@@ -33,7 +33,7 @@ const Slider = React.forwardRef<
     <SliderPrimitive.Root
       ref={ref}
       className={cn(
-        'relative h-3 flex w-full touch-none select-none items-center cursor-pointer',
+        'relative h-6 md:h-3 flex w-full touch-none select-none items-center cursor-pointer',
         className,
       )}
       onMouseEnter={() => setShowTooltip(true)}
@@ -42,7 +42,7 @@ const Slider = React.forwardRef<
     >
       <SliderPrimitive.Track
         className={clsx(
-          'relative h-1 w-full grow overflow-hidden rounded-full select-none',
+          'relative h-1.5 md:h-1 w-full grow overflow-hidden rounded-full select-none',
           variant === 'default' && 'bg-secondary',
           variant === 'secondary' && 'bg-muted-foreground/70',
         )}
@@ -66,11 +66,14 @@ const Slider = React.forwardRef<
       >
         <SliderPrimitive.Thumb
           className={clsx(
-            'block opacity-0 h-3 w-3 cursor-pointer select-none rounded-full',
+            'block h-4 w-4 md:h-3 md:w-3 cursor-pointer select-none rounded-full',
+            // The thumb is the only drag affordance on touch, where there is
+            // no hover to reveal it.
+            'opacity-100 md:opacity-0',
             'border-2 ring-offset-background transition-[background-color,opacity]',
             'focus-visible:outline-none focus-visible:ring-transparent',
             'disabled:pointer-events-none disabled:opacity-50 transform-gpu',
-            showTooltip && 'opacity-100',
+            showTooltip && 'md:opacity-100',
             variant === 'default' && 'bg-foreground border-foreground',
             variant === 'secondary' &&
               'bg-secondary-foreground border-secondary-foreground',
@@ -282,7 +285,7 @@ export function ProgressSlider(props: ProgressSliderProps) {
     <SliderPrimitive.Root
       ref={sliderRef}
       className={cn(
-        'relative h-3 flex w-full touch-none select-none items-center cursor-pointer',
+        'relative h-6 md:h-3 flex w-full touch-none select-none items-center cursor-pointer',
         className,
       )}
       onMouseOver={handleMouseOver}
@@ -301,7 +304,7 @@ export function ProgressSlider(props: ProgressSliderProps) {
       >
         <SliderPrimitive.Track
           className={clsx(
-            'relative h-1 w-full grow overflow-hidden rounded-full select-none',
+            'relative h-1.5 md:h-1 w-full grow overflow-hidden rounded-full select-none',
             variant === 'default' && 'bg-secondary',
             variant === 'secondary' && 'bg-muted-foreground/70',
           )}
@@ -321,11 +324,12 @@ export function ProgressSlider(props: ProgressSliderProps) {
 
       <SliderPrimitive.Thumb
         className={clsx(
-          'block opacity-0 h-3 w-3 cursor-pointer select-none rounded-full',
+          'block h-4 w-4 md:h-3 md:w-3 cursor-pointer select-none rounded-full',
+          'opacity-100 md:opacity-0',
           'border-2 transition-[background-color,opacity]',
           'focus-visible:outline-none focus-visible:ring-transparent',
           'disabled:pointer-events-none disabled:opacity-50 transform-gpu',
-          showTooltip && 'opacity-100',
+          showTooltip && 'md:opacity-100',
           variant === 'default' && 'bg-foreground border-foreground',
           variant === 'secondary' &&
             'bg-secondary-foreground border-secondary-foreground',

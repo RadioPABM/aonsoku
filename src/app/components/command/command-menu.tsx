@@ -170,7 +170,7 @@ export default function CommandMenu({ hideTrigger = false }: CommandMenuProps) {
             onValueChange={(value) => handleSearchChange(value)}
             onKeyDown={handleInputKeyDown}
           />
-          <ScrollArea className="max-h-[500px] 2xl:max-h-[700px]">
+          <ScrollArea className="max-h-[50dvh] md:max-h-[500px] 2xl:max-h-[700px]">
             <CommandList className="max-h-fit pr-1">
               <CommandEmpty>{t('command.noResults')}</CommandEmpty>
 

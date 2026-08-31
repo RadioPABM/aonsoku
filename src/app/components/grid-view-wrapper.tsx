@@ -37,6 +37,7 @@ export function GridViewWrapper<T>({
 }: GridViewWrapperProps<T>) {
   const scrollDivRef = useRef<HTMLDivElement | null>(null)
   const [gridColumnsSize, setGridColumnsSize] = useState(4)
+  const [gridPadding, setGridPadding] = useState(padding)
   const [size, setSize] = useState({
     width: defaultWidth,
     height: defaultWidth + titleHeight,
@@ -62,7 +63,7 @@ export function GridViewWrapper<T>({
 
     const pageWidth = scrollDivRef.current.offsetWidth
     const gapsDifference = (gridColumnsSize - 1) * gap
-    const bothSidesPaddingSize = padding * 2
+    const bothSidesPaddingSize = gridPadding * 2
     const remainSpace = pageWidth - bothSidesPaddingSize - gapsDifference
 
     const width = remainSpace / gridColumnsSize
@@ -72,7 +73,7 @@ export function GridViewWrapper<T>({
       width,
       height,
     }
-  }, [defaultWidth, gap, gridColumnsSize, padding, titleHeight])
+  }, [defaultWidth, gap, gridColumnsSize, gridPadding, titleHeight])
 
   useLayoutEffect(() => {
     scrollDivRef.current = getMainScrollElement()
@@ -84,9 +85,17 @@ export function GridViewWrapper<T>({
         setGridColumnsSize(8) // 2xl breakpoint
       } else if (width >= 1024) {
         setGridColumnsSize(6) // lg breakpoint
+      } else if (width >= 768) {
+        setGridColumnsSize(4) // md breakpoint
+      } else if (width >= 640) {
+        setGridColumnsSize(3) // sm breakpoint
       } else {
-        setGridColumnsSize(4) // default size
+        // Four covers on a phone leave them around 70px wide
+        setGridColumnsSize(2)
       }
+
+      // Matches the page padding, which is smaller on mobile
+      setGridPadding(width >= 768 ? padding : 16)
 
       const newSize = calculateSize()
       setSize(newSize)
@@ -115,7 +124,7 @@ export function GridViewWrapper<T>({
       cancelAnimationFrame(animationFrameId)
       resizeObserver.disconnect()
     }
-  }, [calculateSize])
+  }, [calculateSize, padding])
 
   const grid = useGrid({
     scrollRef: scrollDivRef,
@@ -125,7 +134,7 @@ export function GridViewWrapper<T>({
     rows,
     size,
     padding: {
-      x: padding,
+      x: gridPadding,
     },
     gap,
     overscan: 5,

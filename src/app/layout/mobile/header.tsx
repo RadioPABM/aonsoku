@@ -11,7 +11,7 @@ export function MobileHeader() {
   const { canGoBack, goBack } = useNavigationHistory()
 
   return (
-    <header className="w-full h-mobile-header flex items-center justify-between gap-1 px-2 fixed top-0 right-0 left-0 z-20 bg-background border-b">
+    <header className="w-full h-mobile-header pt-mobile-safe-top flex items-center justify-between gap-1 px-2 fixed top-0 right-0 left-0 z-20 bg-background border-b">
       <div className="flex items-center gap-1">
         <Button
           variant="ghost"
