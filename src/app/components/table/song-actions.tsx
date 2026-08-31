@@ -11,15 +11,18 @@ interface SongTableActionsProps {
 export function SongTableActions({ row }: SongTableActionsProps) {
   return (
     <div className="flex gap-1 items-center">
-      <TableActionButton
-        optionsMenuItems={
-          <SongMenuOptions
-            variant="dropdown"
-            song={row.original}
-            index={row.index}
-          />
-        }
-      />
+      {/* The row menu is desktop only, it costs too much width on a phone */}
+      <div className="hidden md:block">
+        <TableActionButton
+          optionsMenuItems={
+            <SongMenuOptions
+              variant="dropdown"
+              song={row.original}
+              index={row.index}
+            />
+          }
+        />
+      </div>
       <TableLikeButton
         type="song"
         entityId={row.original.id}

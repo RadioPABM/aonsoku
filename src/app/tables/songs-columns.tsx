@@ -156,6 +156,7 @@ export function songsColumns(): ColumnDefType<ISong>[] {
         width: 80,
         maxWidth: 80,
       },
+      className: 'hidden md:flex',
     },
     {
       id: 'duration',
@@ -262,6 +263,7 @@ export function songsColumns(): ColumnDefType<ISong>[] {
         maxWidth: 120,
         justifyContent: 'end',
       },
+      className: '!w-14 !max-w-14 md:!w-[120px] md:!max-w-[120px]',
       header: () => (
         <MemoSimpleTooltip text={i18n.t('table.columns.favorite')}>
           <HeartIcon className="w-4 h-4 mr-2" />
