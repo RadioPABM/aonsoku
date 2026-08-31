@@ -131,7 +131,7 @@ pnpm run android:open
 
   A release build is signed when these environment variables are set:
   `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and
-  `ANDROID_KEY_PASSWORD`. The `Release Android` workflow does the same from the
+  `ANDROID_KEY_PASSWORD`. The `Release` workflow does the same from the
   `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`
   and `ANDROID_KEY_PASSWORD` repository secrets, and falls back to a debug APK
   when they are missing.
