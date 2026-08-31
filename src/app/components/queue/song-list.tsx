@@ -51,10 +51,10 @@ export function QueueSongList() {
   const sourceLabel = getSourceLabel(source)
 
   return (
-    <div className="flex flex-1 flex-col h-full min-w-[300px]">
+    <div className="flex flex-1 flex-col h-full min-w-0 md:min-w-[300px]">
       <DialogTitle className="sr-only">{t('queue.title')}</DialogTitle>
       <div className="flex items-center justify-between h-8 mb-2">
-        <div className="flex gap-2 items-center text-foreground/70 text-sm whitespace-nowrap shrink min-w-0">
+        <div className="flex gap-2 items-center text-foreground/70 text-sm whitespace-nowrap shrink min-w-0 overflow-hidden">
           <span className="text-foreground shrink-0">{t('queue.title')}</span>
           {sourceLabel && (
             <div className="hidden md:flex gap-2 items-center shrink min-w-0">
@@ -66,20 +66,20 @@ export function QueueSongList() {
           <span className="shrink-0">
             {t('playlist.songCount', { count: trackListCount })}
           </span>
-          <span className="shrink-0">{'•'}</span>
-          <span className="shrink-0">
+          <span className="hidden sm:inline shrink-0">{'•'}</span>
+          <span className="hidden sm:inline shrink-0">
             {t('playlist.duration', { duration: trackListDuration })}
           </span>
         </div>
 
-        <div>
+        <div className="shrink-0">
           <Button
             variant="ghost"
-            className="px-4 h-8 rounded-full py-0 flex items-center justify-center hover:bg-foreground/20"
+            className="px-2 sm:px-4 h-8 rounded-full py-0 flex items-center justify-center hover:bg-foreground/20"
             onClick={clearPlayerState}
           >
-            <ListXIcon className="mr-1 w-5 h-5" />
-            <span className="text-sm">{t('queue.clear')}</span>
+            <ListXIcon className="sm:mr-1 w-5 h-5" />
+            <span className="hidden sm:inline text-sm">{t('queue.clear')}</span>
           </Button>
         </div>
       </div>

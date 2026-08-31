@@ -67,6 +67,15 @@ button {
   app-region: no-drag;
 }
 
+/* Table columns carry inline min-widths sized for the desktop layout, which
+   push the last columns off screen on phones. */
+@media (max-width: 767px) {
+  [role='cell'],
+  [role='columnheader'] {
+    min-width: 0 !important;
+  }
+}
+
 .Toastify__toast-container {
   padding: 0px !important;
 }

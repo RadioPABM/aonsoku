@@ -61,7 +61,10 @@ export function TableLikeButton({
       variant="ghost"
       className={clsx(
         'w-8 h-8 p-1 rounded-full transition-opacity hover:bg-background/80',
-        !isStarred && 'opacity-0 group-hover/tablerow:opacity-100',
+        // Touch devices have no hover, so an empty heart is always shown there
+        // to keep the action discoverable.
+        !isStarred &&
+          'opacity-70 md:opacity-0 md:group-hover/tablerow:opacity-100',
       )}
       onClick={(e) => {
         e.stopPropagation()
