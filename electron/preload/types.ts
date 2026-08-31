@@ -84,9 +84,11 @@ export interface IAonsokuAPI {
   checkForUpdates: () => Promise<UpdateCheckResult | null>
   downloadUpdate: () => void
   quitAndInstall: () => void
-  onUpdateAvailable: (callback: (info: UpdateInfo) => void) => void
-  onUpdateNotAvailable: (callback: () => void) => void
-  onUpdateError: (callback: (error: string) => void) => void
-  onDownloadProgress: (callback: (progress: ProgressInfo) => void) => void
-  onUpdateDownloaded: (callback: (info: UpdateDownloadedEvent) => void) => void
+  onUpdateAvailable: (callback: (info: UpdateInfo) => void) => () => void
+  onUpdateNotAvailable: (callback: () => void) => () => void
+  onUpdateError: (callback: (error: string) => void) => () => void
+  onDownloadProgress: (callback: (progress: ProgressInfo) => void) => () => void
+  onUpdateDownloaded: (
+    callback: (info: UpdateDownloadedEvent) => void,
+  ) => () => void
 }

@@ -10,6 +10,7 @@ import ListWrapper from '@/app/components/list-wrapper'
 import { EmptyPlaylistsPage } from '@/app/components/playlist/empty-page'
 import { Button } from '@/app/components/ui/button'
 import { DataTable } from '@/app/components/ui/data-table'
+import ErrorPage from '@/app/pages/error-page'
 import { playlistsColumns } from '@/app/tables/playlists-columns'
 import { subsonic } from '@/service/subsonic'
 import { usePlayerActions } from '@/store/player.store'
@@ -41,7 +42,7 @@ export default function PlaylistsPage() {
   }
 
   if (isLoading) return <SongListFallback />
-  if (!playlists) return null
+  if (!playlists) return <ErrorPage status={500} />
 
   const showTable = playlists.length > 0
 

@@ -4,6 +4,7 @@ import { InfinitySongListFallback } from '@/app/components/fallbacks/song-fallba
 import { HeaderTitle } from '@/app/components/header-title'
 import { DataTableList } from '@/app/components/ui/data-table-list'
 import { useFavoriteSongs } from '@/app/hooks/use-favorite-songs'
+import ErrorPage from '@/app/pages/error-page'
 import { songsColumns } from '@/app/tables/songs-columns'
 import { usePlayerActions } from '@/store/player.store'
 import { ColumnFilter } from '@/types/columnFilter'
@@ -18,7 +19,7 @@ export default function SongList() {
   if (isLoading) {
     return <InfinitySongListFallback />
   }
-  if (!data) return null
+  if (!data) return <ErrorPage status={500} />
 
   const songlist = data.songs
   const songCount = data.songs.length

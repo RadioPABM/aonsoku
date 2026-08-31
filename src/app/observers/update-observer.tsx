@@ -45,7 +45,7 @@ export function UpdateObserver() {
   }, [setOpenDialog, updateCheckResult])
 
   useEffect(() => {
-    window.api.onUpdateDownloaded(() => {
+    const unsubscribeDownloaded = window.api.onUpdateDownloaded(() => {
       toast.update('update', {
         render: t('update.toasts.success'),
         type: 'success',
@@ -55,7 +55,7 @@ export function UpdateObserver() {
       window.api.quitAndInstall()
     })
 
-    window.api.onUpdateError(() => {
+    const unsubscribeError = window.api.onUpdateError(() => {
       setUpdateHasStarted(false)
       setRemindOnNextBoot(true)
 
@@ -67,11 +67,17 @@ export function UpdateObserver() {
       })
     })
 
-    window.api.onDownloadProgress((progress) => {
+    const unsubscribeProgress = window.api.onDownloadProgress((progress) => {
       toast.update('update', {
         progress: progress.percent / 100,
       })
     })
+
+    return () => {
+      unsubscribeDownloaded()
+      unsubscribeError()
+      unsubscribeProgress()
+    }
   }, [t, setRemindOnNextBoot])
 
   if (!updateCheckResult || !updateCheckResult.isUpdateAvailable) return null

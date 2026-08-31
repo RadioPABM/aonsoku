@@ -32,7 +32,7 @@ export function AlbumsFilterByGenre() {
   const { getSearchParam } = new SearchParamsHandler(searchParams)
 
   const { data: genres, isLoading } = useQuery({
-    queryKey: [queryKeys.genre],
+    queryKey: [queryKeys.genre.all],
     queryFn: subsonic.genres.get,
   })
 

@@ -10,6 +10,7 @@ import ListWrapper from '@/app/components/list-wrapper'
 import { MainViewTypeSelector } from '@/app/components/main-grid'
 import { DataTable } from '@/app/components/ui/data-table'
 import { useSongList } from '@/app/hooks/use-song-list'
+import ErrorPage from '@/app/pages/error-page'
 import { artistsColumns } from '@/app/tables/artists-columns'
 import { subsonic } from '@/service/subsonic'
 import { useAppArtistsViewType } from '@/store/app.store'
@@ -53,7 +54,7 @@ export default function ArtistsList() {
   }
 
   if (isLoading) return <ArtistsFallback />
-  if (!artists) return null
+  if (!artists) return <ErrorPage status={500} />
 
   return (
     <div className="w-full h-full">

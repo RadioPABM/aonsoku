@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom'
 import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
 import { ROUTES } from '@/routes/routesList'
 import { EpisodeWithPodcast } from '@/types/responses/podcasts'
+import { publicAsset } from '@/utils/publicAsset'
 
-const placeholderImageSrc = '/default_podcast_art.png'
+const placeholderImageSrc = publicAsset('default_podcast_art.png')
 
 const MemoLazyLoadImage = memo(LazyLoadImage)
 const MemoMarqueeTitle = memo(MarqueeTitle)

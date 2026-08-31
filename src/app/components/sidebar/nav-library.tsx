@@ -12,16 +12,20 @@ import { SidebarPodcastItem } from './podcast-item'
 
 export function NavLibrary() {
   const { t } = useTranslation()
-  const hideArtistsSection = useAppStore().pages.hideArtistsSection
-  const hideSongsSection = useAppStore().pages.hideSongsSection
-  const hideAlbumsSection = useAppStore().pages.hideAlbumsSection
-  const hideGenresSection = useAppStore().pages.hideGenresSection
-  const hideFavoritesSection = useAppStore().pages.hideFavoritesSection
-  const hidePlaylistsSection = useAppStore().pages.hidePlaylistsSection
-  const hideRadiosSection = useAppStore().pages.hideRadiosSection
-  const isPodcastsActive = useAppStore().podcasts.active
+  const {
+    hideArtistsSection,
+    hideSongsSection,
+    hideAlbumsSection,
+    hideGenresSection,
+    hideFavoritesSection,
+    hidePlaylistsSection,
+    hideRadiosSection,
+  } = useAppStore((state) => state.pages)
+  const isPodcastsActive = useAppStore((state) => state.podcasts.active)
 
-  const isAllSectionsHidden = useAppStore().pages.isAllSectionsHidden()
+  const isAllSectionsHidden = useAppStore((state) =>
+    state.pages.isAllSectionsHidden(),
+  )
 
   if (isAllSectionsHidden) return null
 

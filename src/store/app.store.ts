@@ -319,9 +319,9 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                   authType,
                 )
 
-                const serverInfo = await queryServerInfo(url)
-
                 if (canConnect) {
+                  const serverInfo = await queryServerInfo(url)
+
                   set((state) => {
                     state.data.url = url
                     state.data.username = username

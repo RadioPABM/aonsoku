@@ -1,5 +1,12 @@
 import clsx from 'clsx'
-import { RefObject, useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { ProgressSlider } from '@/app/components/ui/slider'
 import { podcasts } from '@/service/podcasts'
 import {
@@ -16,11 +23,10 @@ interface PlayerProgressProps {
   audioRef: RefObject<HTMLAudioElement>
 }
 
-let isSeeking = false
-
 export function PlayerProgress({ audioRef }: PlayerProgressProps) {
   const progress = usePlayerProgress()
   const [localProgress, setLocalProgress] = useState(progress)
+  const isSeeking = useRef(false)
   const currentDuration = usePlayerDuration()
   const { currentList, podcastList, currentSongIndex } = usePlayerSonglist()
   const { isSong, isPodcast } = usePlayerMediaType()
@@ -31,7 +37,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
 
   const updateAudioCurrentTime = useCallback(
     (value: number) => {
-      isSeeking = false
+      isSeeking.current = false
       if (audioRef.current) {
         audioRef.current.currentTime = value
       }
@@ -40,7 +46,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
   )
 
   const handleSeeking = useCallback((amount: number) => {
-    isSeeking = true
+    isSeeking.current = true
     setLocalProgress(amount)
   }, [])
 
@@ -98,7 +104,9 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
     setUpdatePodcastProgress,
   ])
 
-  const currentTime = convertSecondsToTime(isSeeking ? localProgress : progress)
+  const currentTime = convertSecondsToTime(
+    isSeeking.current ? localProgress : progress,
+  )
 
   const isProgressLarge = useMemo(() => {
     return localProgress >= 3600 || progress >= 3600
@@ -127,7 +135,7 @@ export function PlayerProgress({ audioRef }: PlayerProgressProps) {
       {!isEmpty || isPodcast ? (
         <ProgressSlider
           defaultValue={[0]}
-          value={isSeeking ? [localProgress] : [progress]}
+          value={isSeeking.current ? [localProgress] : [progress]}
           tooltipTransformer={convertSecondsToTime}
           max={currentDuration}
           step={1}

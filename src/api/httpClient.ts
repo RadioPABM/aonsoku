@@ -4,6 +4,8 @@ import { useAppStore } from '@/store/app.store'
 import { CoverArt } from '@/types/coverArtType'
 import { AuthType } from '@/types/serverConfig'
 import { appName } from '@/utils/appName'
+import { logger } from '@/utils/logger'
+import { publicAsset } from '@/utils/publicAsset'
 import { saltWord } from '@/utils/salt'
 
 export type QueryType = Record<string, string | number | undefined>
@@ -69,24 +71,48 @@ function getUrl(path: string, options?: QueryType) {
   return url
 }
 
+type SubsonicPayload = {
+  status?: 'ok' | 'failed'
+  error?: { code: number; message: string }
+}
+
 async function browserFetch<T>(
   url: string,
   options: RequestInit,
 ): Promise<{ count: number; data: T } | undefined> {
+  const endpoint = url.split('?')[0]
+
   try {
     const response = await fetch(url, options)
 
-    if (response.ok) {
-      const data = await response.json()
-      return {
-        count: parseInt(response.headers.get('x-total-count') || '0', 10),
-        data: data['subsonic-response'] as T,
-      }
+    if (!response.ok) {
+      logger.error('[httpClient] - Request failed', {
+        endpoint,
+        status: response.status,
+      })
+      return undefined
     }
 
-    return undefined
+    const data = await response.json()
+    const payload = data['subsonic-response'] as SubsonicPayload
+
+    // Subsonic answers with HTTP 200 even for auth and permission errors, so
+    // the failures are only visible in the payload.
+    if (payload?.status === 'failed') {
+      logger.error('[httpClient] - Subsonic error', {
+        endpoint,
+        code: payload.error?.code,
+        message: payload.error?.message,
+      })
+      return undefined
+    }
+
+    return {
+      count: parseInt(response.headers.get('x-total-count') || '0', 10),
+      data: payload as T,
+    }
   } catch (error) {
-    console.error('Error on browserFetch request', error)
+    logger.error('[httpClient] - Error on request', { endpoint, error })
     return undefined
   }
 }
@@ -101,7 +127,7 @@ export async function httpClient<T>(
 
     return await browserFetch<T>(url, init)
   } catch (error) {
-    console.error('Error on httpClient request', error)
+    logger.error('[httpClient] - Unable to build the request', error)
     return undefined
   }
 }
@@ -114,7 +140,7 @@ export function getSimpleCoverArtUrl(
   if (!id) {
     // everything except artists uses the same default cover art
     const resolvedType = type === 'artist' ? 'artist' : 'album'
-    return `/default_${resolvedType}_art.png`
+    return publicAsset(`default_${resolvedType}_art.png`)
   }
 
   return getUrl('getCoverArt', { id, size })
@@ -165,5 +191,4 @@ export function getShareUrl(id: string) {
   return getUrl('createShare', {
     id,
   })
-
 }

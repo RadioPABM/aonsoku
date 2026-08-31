@@ -21,8 +21,9 @@ import {
 import { LoopState } from '@/types/playerContext'
 import { EpisodeWithPodcast } from '@/types/responses/podcasts'
 import { ISong } from '@/types/responses/song'
+import { publicAsset } from '@/utils/publicAsset'
 
-const podcastPlaceholder = '/default_podcast_art.png'
+const podcastPlaceholder = publicAsset('default_podcast_art.png')
 
 export function MobileMiniPlayer() {
   const { t } = useTranslation()

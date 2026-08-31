@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { Podcast } from '@/types/responses/podcasts'
+import { publicAsset } from '@/utils/publicAsset'
 
 interface ListImageProps {
   podcast: Podcast
 }
 
-const placeholderSrc = '/default_podcast_art.png'
+const placeholderSrc = publicAsset('default_podcast_art.png')
 
 export function PodcastListImage({ podcast }: ListImageProps) {
   const [imageSrc, setImageSrc] = useState(podcast.image_url)

@@ -2,6 +2,19 @@ import { electronAPI } from '@electron-toolkit/preload'
 import { contextBridge, ipcRenderer } from 'electron'
 import { IAonsokuAPI, IpcChannels, PlayerStateListenerActions } from './types'
 
+// Returns an unsubscribe function so the renderer can drop the listener on
+// unmount instead of stacking a new one on every re-registration.
+function subscribe(
+  channel: IpcChannels,
+  listener: (...args: never[]) => void,
+): () => void {
+  ipcRenderer.on(channel, listener as never)
+
+  return () => {
+    ipcRenderer.removeListener(channel, listener as never)
+  }
+}
+
 // Custom APIs for renderer
 const api: IAonsokuAPI = {
   enterFullScreen: () => ipcRenderer.send(IpcChannels.ToggleFullscreen, true),
@@ -65,23 +78,18 @@ const api: IAonsokuAPI = {
   checkForUpdates: () => ipcRenderer.invoke(IpcChannels.CheckForUpdates),
   downloadUpdate: () => ipcRenderer.send(IpcChannels.DownloadUpdate),
   quitAndInstall: () => ipcRenderer.send(IpcChannels.QuitAndInstall),
-  onUpdateAvailable: (callback) => {
-    ipcRenderer.on(IpcChannels.UpdateAvailable, (_, info) => callback(info))
-  },
-  onUpdateNotAvailable: (callback) => {
-    ipcRenderer.on(IpcChannels.UpdateNotAvailable, () => callback())
-  },
-  onUpdateError: (callback) => {
-    ipcRenderer.on(IpcChannels.UpdateError, (_, error) => callback(error))
-  },
-  onDownloadProgress: (callback) => {
-    ipcRenderer.on(IpcChannels.DownloadProgress, (_, progress) =>
+  onUpdateAvailable: (callback) =>
+    subscribe(IpcChannels.UpdateAvailable, (_, info) => callback(info)),
+  onUpdateNotAvailable: (callback) =>
+    subscribe(IpcChannels.UpdateNotAvailable, () => callback()),
+  onUpdateError: (callback) =>
+    subscribe(IpcChannels.UpdateError, (_, error) => callback(error)),
+  onDownloadProgress: (callback) =>
+    subscribe(IpcChannels.DownloadProgress, (_, progress) =>
       callback(progress),
-    )
-  },
-  onUpdateDownloaded: (callback) => {
-    ipcRenderer.on(IpcChannels.UpdateDownloaded, (_, info) => callback(info))
-  },
+    ),
+  onUpdateDownloaded: (callback) =>
+    subscribe(IpcChannels.UpdateDownloaded, (_, info) => callback(info)),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

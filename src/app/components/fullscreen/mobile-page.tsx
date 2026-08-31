@@ -12,6 +12,7 @@ import {
   usePlayerMediaType,
   usePlayerSonglist,
 } from '@/store/player.store'
+import { publicAsset } from '@/utils/publicAsset'
 import { FullscreenBackdrop } from './backdrop'
 import { buttonsStyle, FullscreenControls } from './controls'
 import { LikeButton } from './like-button'
@@ -124,7 +125,7 @@ function MobileCover() {
     return (
       <div className="w-full max-w-[min(100%,70vh)] aspect-square rounded-lg overflow-hidden bg-accent/60 shadow-custom-5">
         <img
-          src={podcast?.image_url || '/default_podcast_art.png'}
+          src={podcast?.image_url || publicAsset('default_podcast_art.png')}
           alt={podcast?.title}
           className="size-full object-cover"
         />

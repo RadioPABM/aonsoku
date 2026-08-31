@@ -492,7 +492,10 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               const isPlayingOneOrLess = listLength <= 1
               const isPlayingLastSong = currentSongIndex === listLength - 1
 
-              if (isPlayingOneOrLess || isPlayingLastSong) return
+              // Shuffling only makes sense when there is something left to
+              // shuffle, but restoring the original order always does.
+              if (!isShuffleActive && (isPlayingOneOrLess || isPlayingLastSong))
+                return
 
               if (isShuffleActive) {
                 const currentSongId = get().songlist.currentSong.id

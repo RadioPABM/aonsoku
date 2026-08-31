@@ -7,6 +7,7 @@ import { SongListFallback } from '@/app/components/fallbacks/song-fallbacks'
 import { HeaderTitle } from '@/app/components/header-title'
 import ListWrapper from '@/app/components/list-wrapper'
 import { DataTable } from '@/app/components/ui/data-table'
+import ErrorPage from '@/app/pages/error-page'
 import { genresColumns } from '@/app/tables/genres-columns'
 import { ROUTES } from '@/routes/routesList'
 import { subsonic } from '@/service/subsonic'
@@ -27,7 +28,7 @@ export default function GenresList() {
   })
 
   if (isLoading) return <SongListFallback />
-  if (!genres) return null
+  if (!genres) return <ErrorPage status={500} />
 
   const filteredGenres = genres
     .filter((genre) => genre.albumCount >= 2)

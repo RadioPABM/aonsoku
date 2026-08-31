@@ -8,6 +8,7 @@ import { ClearFilterButton } from '@/app/components/search/clear-filter-button'
 import { ExpandableSearchInput } from '@/app/components/search/expandable-input'
 import { DataTableList } from '@/app/components/ui/data-table-list'
 import { useTotalSongs } from '@/app/hooks/use-total-songs'
+import ErrorPage from '@/app/pages/error-page'
 import { songsColumns } from '@/app/tables/songs-columns'
 import { getArtistAllSongs, songsSearch } from '@/queries/songs'
 import { usePlayerActions } from '@/store/player.store'
@@ -59,7 +60,7 @@ export default function SongList() {
   if (isLoading && !isFetchingNextPage) {
     return <InfinitySongListFallback />
   }
-  if (!data) return null
+  if (!data) return <ErrorPage status={500} />
 
   const songlist = data.pages.flatMap((page) => page.songs) ?? []
   const songCount = (hasSomeFilter ? songlist.length : songCountData) ?? 0

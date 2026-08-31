@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { ProgressSlider } from '@/app/components/ui/slider'
 import {
   usePlayerActions,
@@ -8,18 +8,17 @@ import {
 } from '@/store/player.store'
 import { convertSecondsToTime } from '@/utils/convertSecondsToTime'
 
-let isSeeking = false
-
 export function FullscreenProgress() {
   const progress = usePlayerProgress()
   const [localProgress, setLocalProgress] = useState(progress)
+  const isSeeking = useRef(false)
   const audioPlayerRef = usePlayerRef()
   const currentDuration = usePlayerDuration()
   const { setProgress } = usePlayerActions()
 
   const updateAudioCurrentTime = useCallback(
     (value: number) => {
-      isSeeking = false
+      isSeeking.current = false
       if (audioPlayerRef) {
         audioPlayerRef.currentTime = value
       }
@@ -28,7 +27,7 @@ export function FullscreenProgress() {
   )
 
   const handleSeeking = useCallback((amount: number) => {
-    isSeeking = true
+    isSeeking.current = true
     setLocalProgress(amount)
   }, [])
 
@@ -48,7 +47,9 @@ export function FullscreenProgress() {
     }
   }, [localProgress, progress, setProgress, updateAudioCurrentTime])
 
-  const currentTime = convertSecondsToTime(isSeeking ? localProgress : progress)
+  const currentTime = convertSecondsToTime(
+    isSeeking.current ? localProgress : progress,
+  )
 
   return (
     <div className="flex items-center gap-3">
@@ -59,7 +60,7 @@ export function FullscreenProgress() {
       <ProgressSlider
         variant="secondary"
         defaultValue={[0]}
-        value={isSeeking ? [localProgress] : [progress]}
+        value={isSeeking.current ? [localProgress] : [progress]}
         tooltipTransformer={convertSecondsToTime}
         max={currentDuration}
         step={1}

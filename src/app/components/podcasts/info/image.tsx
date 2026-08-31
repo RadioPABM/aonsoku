@@ -2,10 +2,11 @@ import clsx from 'clsx'
 import { ComponentPropsWithoutRef, useState } from 'react'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { CustomLightBox } from '@/app/components/lightbox'
+import { publicAsset } from '@/utils/publicAsset'
 
 type PodcastInfoImageProps = ComponentPropsWithoutRef<'img'>
 
-const placeholderSrc = '/default_podcast_art.png'
+const placeholderSrc = publicAsset('default_podcast_art.png')
 
 export function PodcastInfoImage({ src, alt }: PodcastInfoImageProps) {
   const [open, setOpen] = useState(false)

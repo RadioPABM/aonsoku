@@ -9,14 +9,16 @@ import { CommandItemProps } from './command-menu'
 export function CommandGotoPage({ runCommand }: CommandItemProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const hideArtistsSection = useAppStore().pages.hideArtistsSection
-  const hideSongsSection = useAppStore().pages.hideSongsSection
-  const hideAlbumsSection = useAppStore().pages.hideAlbumsSection
-  const hideGenresSection = useAppStore().pages.hideGenresSection
-  const hideFavoritesSection = useAppStore().pages.hideFavoritesSection
-  const hidePlaylistsSection = useAppStore().pages.hidePlaylistsSection
-  const hideRadiosSection = useAppStore().pages.hideRadiosSection
-  const isPodcastsActive = useAppStore().podcasts.active
+  const {
+    hideArtistsSection,
+    hideSongsSection,
+    hideAlbumsSection,
+    hideGenresSection,
+    hideFavoritesSection,
+    hidePlaylistsSection,
+    hideRadiosSection,
+  } = useAppStore((state) => state.pages)
+  const isPodcastsActive = useAppStore((state) => state.podcasts.active)
 
   const pages = [...mainNavItems, ...libraryItems]
 

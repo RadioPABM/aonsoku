@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Slider } from '@/app/components/ui/slider'
 import {
   usePlayerActions,
@@ -8,18 +8,17 @@ import {
 } from '@/store/player.store'
 import { convertSecondsToTime } from '@/utils/convertSecondsToTime'
 
-let isSeeking = false
-
 export function MiniPlayerProgress() {
   const progress = usePlayerProgress()
   const [localProgress, setLocalProgress] = useState(progress)
+  const isSeeking = useRef(false)
   const audioPlayerRef = usePlayerRef()
   const currentDuration = usePlayerDuration()
   const { setProgress } = usePlayerActions()
 
   const updateAudioCurrentTime = useCallback(
     (value: number) => {
-      isSeeking = false
+      isSeeking.current = false
       if (audioPlayerRef) {
         audioPlayerRef.currentTime = value
       }
@@ -28,7 +27,7 @@ export function MiniPlayerProgress() {
   )
 
   const handleSeeking = useCallback((amount: number) => {
-    isSeeking = true
+    isSeeking.current = true
     setLocalProgress(amount)
   }, [])
 
@@ -48,7 +47,9 @@ export function MiniPlayerProgress() {
     }
   }, [localProgress, progress, setProgress, updateAudioCurrentTime])
 
-  const currentTime = convertSecondsToTime(isSeeking ? localProgress : progress)
+  const currentTime = convertSecondsToTime(
+    isSeeking.current ? localProgress : progress,
+  )
 
   return (
     <div className="flex items-center flex-col">
@@ -65,7 +66,7 @@ export function MiniPlayerProgress() {
       <Slider
         variant="secondary"
         defaultValue={[0]}
-        value={isSeeking ? [localProgress] : [progress]}
+        value={isSeeking.current ? [localProgress] : [progress]}
         max={currentDuration}
         step={1}
         className="w-full h-4"
