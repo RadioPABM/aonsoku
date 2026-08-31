@@ -100,9 +100,8 @@ toggled with Ctrl/Cmd+B); on mobile it renders as a full-width `Sheet`, driven b
 ### Mobile
 
 `useIsMobile()` (`src/app/hooks/use-mobile.tsx`) is the single source of truth:
-`window.innerWidth < 768`, matchMedia-backed. Use it; do not add new device
-detection. (`src/context/MobileContext.tsx` is an unused earlier attempt that
-also sniffed user agents — prefer the hook.)
+`window.innerWidth < 768`, matchMedia-backed, resolved on the first render. Use
+it; do not add new device detection and do not sniff user agents.
 
 `app/layout/base.tsx` picks `MobileShell` (`app/layout/mobile/base.tsx`) or
 `DesktopShell` from that hook. `Player` and the shared dialogs are rendered
