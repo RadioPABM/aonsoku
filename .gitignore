@@ -34,3 +34,8 @@ env-config.js
 out
 
 .pnpm-store/*
+
+# Android signing material, never commit these
+*.keystore
+*.jks
+keystore.b64
