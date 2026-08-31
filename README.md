@@ -106,6 +106,36 @@ pnpm run dev
 pnpm run electron:dev
 ```
 
+* Android App
+
+  Requires a JDK (17 or newer) and the Android SDK. The native project lives in
+  `android/` and is built with [Capacitor](https://capacitorjs.com), which wraps
+  the same web build the browser and desktop apps use.
+
+```sh
+# copy the current web build into the native project
+pnpm run android:sync
+
+# install and run on a connected device or emulator
+pnpm run android:run
+
+# APK for testing, in android/app/build/outputs/apk/debug
+pnpm run android:build
+
+# APK for distribution, unsigned unless a keystore is provided
+pnpm run android:build:release
+
+# open the project in Android Studio
+pnpm run android:open
+```
+
+  A release build is signed when these environment variables are set:
+  `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and
+  `ANDROID_KEY_PASSWORD`. The `Release Android` workflow does the same from the
+  `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`
+  and `ANDROID_KEY_PASSWORD` repository secrets, and falls back to a debug APK
+  when they are missing.
+
 * Docker
 ```yml
 version: '3.8'

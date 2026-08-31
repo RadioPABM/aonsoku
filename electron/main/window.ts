@@ -13,7 +13,8 @@ import { createTray } from './tray'
 
 export let mainWindow: BrowserWindow | null = null
 
-const { defaultWidth, defaultHeight, defaultBgColor } = electron.window
+const { defaultWidth, defaultHeight, minWidth, minHeight, defaultBgColor } =
+  electron.window
 
 export function createWindow(): void {
   const backgroundColor = colorsState.get('bgColor') ?? defaultBgColor
@@ -21,8 +22,9 @@ export function createWindow(): void {
   mainWindow = new StatefulBrowserWindow({
     width: defaultWidth,
     height: defaultHeight,
-    minWidth: defaultWidth,
-    minHeight: defaultHeight,
+    // Small enough to reach the mobile layout, which kicks in below 768px
+    minWidth,
+    minHeight,
     backgroundColor,
     supportMaximize: true,
     show: false,

@@ -27,6 +27,11 @@
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux",
+    "android:sync": "pnpm build && cap sync android",
+    "android:open": "cap open android",
+    "android:run": "pnpm android:sync && cap run android",
+    "android:build": "pnpm android:sync && cd android && ./gradlew assembleDebug",
+    "android:build:release": "pnpm android:sync && cd android && ./gradlew assembleRelease",
     "ci:build:win": "electron-builder --win --publish always",
     "ci:build:mac": "electron-builder --mac --publish always",
     "ci:build:linux": "electron-builder --linux --publish always",
@@ -36,6 +41,8 @@
     "url": "https://github.com/radioPABM/aonsoku"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
     "@chriscodesthings/random-css-hex-color": "^1.1.0",
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
@@ -115,6 +122,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
+    "@capacitor/cli": "^8.5.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@types/crypto-js": "^4.2.2",
     "@types/discord-rpc": "4.0.1",
@@ -151,6 +159,8 @@
     "window": {
       "defaultWidth": 960,
       "defaultHeight": 600,
+      "minWidth": 360,
+      "minHeight": 480,
       "defaultBgColor": "#060e23"
     }
   }

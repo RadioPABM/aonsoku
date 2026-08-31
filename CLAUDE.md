@@ -21,6 +21,9 @@ pnpm dev                # web dev server (vite)
 pnpm build              # tsc && vite build (web)
 pnpm electron:dev       # electron dev with watch
 pnpm electron:build     # electron build
+pnpm android:sync       # web build -> android/ (Capacitor)
+pnpm android:run        # run on a device or emulator
+pnpm android:build      # debug APK (android:build:release for a release one)
 pnpm lint               # biome lint
 pnpm lint:check         # biome check --write  (lint + format, autofix)
 pnpm test               # cypress run --component
@@ -59,6 +62,7 @@ src/
   i18n/locales/       translations
   utils/              desktop/browser detection, formatting helpers
 electron/             Electron main + preload
+android/              Capacitor native project (Android)
 ```
 
 Data flow: component → Zustand action or TanStack Query hook → `service/*` →
@@ -120,6 +124,19 @@ and the queue list. Mobile shell heights are the `--mobile-*` CSS variables in
 `@/utils/browser` → `hasPiPSupport`, `blockFeatures()`. The header and player pad
 themselves for native window controls on Windows/Linux/macOS — keep those guards
 when editing.
+
+### Android
+
+The Android app is the same web build wrapped by Capacitor (`capacitor.config.ts`,
+`android/`). `cap sync` copies `dist/` into `android/app/src/main/assets/public`,
+which is gitignored — never edit it, edit the web app. The version and the
+release signing config in `android/app/build.gradle` are derived from
+`package.json` and from `ANDROID_KEYSTORE_*` environment variables.
+
+`CapacitorHttp` is enabled, so `fetch`/XHR go through the native HTTP layer and
+do not depend on the server sending CORS headers for the `https://localhost`
+origin the WebView uses. Audio streams through `<audio>` elements and is not
+affected by it.
 
 ## Configuration
 
