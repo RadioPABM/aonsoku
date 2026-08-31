@@ -91,7 +91,7 @@ export default function SongList() {
     : t('sidebar.songs')
 
   return (
-    <div className="w-full h-content">
+    <div className="w-full h-mobile-content md:h-content">
       <ShadowHeader
         showGlassEffect={false}
         fixed={false}

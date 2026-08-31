@@ -824,5 +824,14 @@
       "y": "1 year",
       "yy": "%d years"
     }
+  },
+  "error": {
+    "title": "Oops!",
+    "statusCode": "Status Code",
+    "description": "Description",
+    "none": "None",
+    "unhandled": "Unhandled Error",
+    "notFound": "Not Found",
+    "backToHome": "Back to home"
   }
 }

@@ -2,6 +2,7 @@ import { Cell, flexRender, Row } from '@tanstack/react-table'
 import clsx from 'clsx'
 import { MouseEvent, memo, TouchEvent, useMemo } from 'react'
 import { ContextMenuProvider } from '@/app/components/table/context-menu'
+import { useTapHandler } from '@/app/hooks/use-tap-handler'
 import { usePlayerCurrentSong } from '@/store/player.store'
 import { ColumnDefType } from '@/types/react-table/columnDef'
 
@@ -19,9 +20,6 @@ interface TableRowProps<TData> {
   pageType?: 'general' | 'queue'
 }
 
-let isTap = false
-let tapTimeout: NodeJS.Timeout
-
 export function TableListRow<TData>({
   row,
   virtualRow,
@@ -33,26 +31,11 @@ export function TableListRow<TData>({
   pageType = 'general',
 }: TableRowProps<TData>) {
   const currentSong = usePlayerCurrentSong()
-
-  function handleTouchStart() {
-    isTap = true
-    tapTimeout = setTimeout(() => {
-      isTap = false
-    }, 500)
-  }
-
-  function handleTouchMove() {
-    isTap = false
-  }
+  const { handleTouchStart, handleTouchMove, handleTouchCancel, endTap } =
+    useTapHandler()
 
   function handleTouchEnd(e: TouchEvent<HTMLDivElement>) {
-    clearTimeout(tapTimeout)
-    if (isTap) handleRowTap(e, row)
-  }
-
-  function handleTouchCancel() {
-    clearTimeout(tapTimeout)
-    isTap = false
+    if (endTap()) handleRowTap(e, row)
   }
 
   const isRowSongActive = useMemo(() => {

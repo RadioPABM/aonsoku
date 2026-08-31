@@ -47,7 +47,7 @@ export default function SongList() {
   const title = t('sidebar.favorites')
 
   return (
-    <div className="w-full h-content">
+    <div className="w-full h-mobile-content md:h-content">
       <ShadowHeader
         showGlassEffect={false}
         fixed={false}

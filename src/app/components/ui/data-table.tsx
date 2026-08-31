@@ -29,13 +29,13 @@ import {
 import { isMacOs } from 'react-device-detect'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useTranslation } from 'react-i18next'
-
 import { PlaylistOptions } from '@/app/components/playlist/options'
 import { SongMenuOptions } from '@/app/components/song/menu-options'
 import { SelectedSongsMenuOptions } from '@/app/components/song/selected-options'
 import { Button } from '@/app/components/ui/button'
 import { DataTablePagination } from '@/app/components/ui/data-table-pagination'
 import { Input } from '@/app/components/ui/input'
+import { useTapHandler } from '@/app/hooks/use-tap-handler'
 import { ColumnFilter } from '@/types/columnFilter'
 import { ColumnDefType } from '@/types/react-table/columnDef'
 import { Playlist } from '@/types/responses/playlist'
@@ -79,9 +79,6 @@ interface DataTableProps<TData, TValue> {
   enableVirtualization?: boolean
 }
 
-let isTap = false
-let tapTimeout: NodeJS.Timeout
-
 export function DataTable<TData, TValue>({
   columns,
   data,
@@ -90,7 +87,7 @@ export function DataTable<TData, TValue>({
   showPagination = false,
   showSearch = false,
   searchColumn,
-  noRowsMessage = 'No results.',
+  noRowsMessage,
   allowRowSelection = true,
   showContextMenu = true,
   showHeader = true,
@@ -100,6 +97,8 @@ export function DataTable<TData, TValue>({
   onRowClick,
   enableVirtualization = false,
 }: DataTableProps<TData, TValue>) {
+  const { handleTouchStart, handleTouchMove, handleTouchCancel, endTap } =
+    useTapHandler()
   const { t } = useTranslation()
   const newColumns = columns.filter((column) => {
     return columnFilter?.includes(column.id as ColumnFilter)
@@ -356,30 +355,13 @@ export function DataTable<TData, TValue>({
 
   const handleRowTap = useCallback(
     (e: TouchEvent<HTMLDivElement>, row: Row<TData>) => {
-      clearTimeout(tapTimeout)
-      if (isTap && handlePlaySong) {
+      if (endTap() && handlePlaySong) {
         e.stopPropagation()
         handlePlaySong(row)
       }
     },
-    [handlePlaySong],
+    [endTap, handlePlaySong],
   )
-
-  function handleTouchStart() {
-    isTap = true
-    tapTimeout = setTimeout(() => {
-      isTap = false
-    }, 500)
-  }
-
-  function handleTouchMove() {
-    isTap = false
-  }
-
-  function handleTouchCancel() {
-    clearTimeout(tapTimeout)
-    isTap = false
-  }
 
   function handleDiscNumber(index: number) {
     return showDiscNumber && !isSingleDisk && discNumberIndexes.includes(index)
@@ -574,7 +556,7 @@ export function DataTable<TData, TValue>({
                     className="flex h-24 items-center justify-center p-2"
                     role="cell"
                   >
-                    {noRowsMessage}
+                    {noRowsMessage ?? t('command.noResults')}
                   </div>
                 </div>
               )}

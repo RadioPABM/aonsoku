@@ -16,7 +16,6 @@ interface PlaylistOptionsProps {
   showPlay?: boolean
   disablePlayNext?: boolean
   disableAddLast?: boolean
-  disableDownload?: boolean
   disableEdit?: boolean
   disableDelete?: boolean
 }
@@ -27,7 +26,6 @@ export function PlaylistOptions({
   showPlay = false,
   disablePlayNext = false,
   disableAddLast = false,
-  disableDownload = false,
   disableEdit = false,
   disableDelete = false,
 }: PlaylistOptionsProps) {

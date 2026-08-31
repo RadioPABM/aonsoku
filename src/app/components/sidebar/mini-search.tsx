@@ -11,9 +11,11 @@ export function MiniSidebarSearch({
 }: React.ComponentProps<typeof Button>) {
   const setOpen = useAppStore((state) => state.command.setOpen)
   const { t } = useTranslation()
-  const { open: sidebarOpen } = useMainSidebar()
+  const { open: sidebarOpen, isMobile } = useMainSidebar()
 
-  if (sidebarOpen) {
+  // On mobile the sheet has no command input of its own, so the button is
+  // always needed; on desktop it only replaces the collapsed rail's input.
+  if (sidebarOpen && !isMobile) {
     return null
   }
 

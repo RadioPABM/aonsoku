@@ -85,13 +85,15 @@ export function Player() {
     return audioRef
   }, [isPodcast, isRadio])
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: audioRef needed
+  // Keeps the shared ref pointing at the element that is actually playing, so
+  // seeking works for podcasts and radio too, not only for songs.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the media items signal a new audio element
   useEffect(() => {
-    if (!isSong && !song) return
+    const audio = getAudioRef().current
+    if (!audio || audioPlayerRef === audio) return
 
-    if (audioPlayerRef === null && audioRef.current)
-      setAudioPlayerRef(audioRef.current)
-  }, [audioPlayerRef, audioRef, isSong, setAudioPlayerRef, song])
+    setAudioPlayerRef(audio)
+  }, [audioPlayerRef, getAudioRef, setAudioPlayerRef, song, radio, podcast])
 
   useEffect(() => {
     const audio = podcastRef.current
@@ -195,58 +197,60 @@ export function Player() {
   return (
     <footer
       className={cn(
-        // On mobile the UI lives in the mini player, but the audio elements
-        // below must stay mounted.
+        // On mobile the UI lives in the mini player and only the audio
+        // elements below are needed.
         isMobile
           ? 'hidden'
           : 'border-t h-[--player-height] w-full flex items-center fixed bottom-0 left-0 right-0 z-40 bg-background',
       )}
     >
-      <div className="w-full h-full grid grid-cols-player gap-2 px-4">
-        {/* Track Info */}
-        <div className="flex items-center gap-2 w-full">
-          {isSong && <MemoTrackInfo song={song} />}
-          {isRadio && <MemoRadioInfo radio={radio} />}
-          {isPodcast && <MemoPodcastInfo podcast={podcast} />}
-        </div>
-        {/* Main Controls */}
-        <div className="col-span-2 flex flex-col justify-center items-center px-4 gap-1">
-          <MemoPlayerControls
-            song={song}
-            radio={radio}
-            podcast={podcast}
-            audioRef={getAudioRef()}
-          />
-
-          {(isSong || isPodcast) && (
-            <MemoPlayerProgress audioRef={getAudioRef()} />
-          )}
-        </div>
-        {/* Remain Controls and Volume */}
-        <div className="flex items-center w-full justify-end">
-          <div className="flex items-center gap-1">
-            {isSong && (
-              <>
-                <MemoPlayerLikeButton disabled={!song} />
-                <MemoLyricsButton disabled={!song} />
-                <MemoPlayerQueueButton disabled={!song} />
-              </>
-            )}
-            {isPodcast && <MemoPodcastPlaybackRate />}
-            {(isRadio || isPodcast) && (
-              <MemoPlayerClearQueueButton disabled={!radio && !podcast} />
-            )}
-
-            <MemoPlayerVolume
+      {!isMobile && (
+        <div className="w-full h-full grid grid-cols-player gap-2 px-4">
+          {/* Track Info */}
+          <div className="flex items-center gap-2 w-full">
+            {isSong && <MemoTrackInfo song={song} />}
+            {isRadio && <MemoRadioInfo radio={radio} />}
+            {isPodcast && <MemoPodcastInfo podcast={podcast} />}
+          </div>
+          {/* Main Controls */}
+          <div className="col-span-2 flex flex-col justify-center items-center px-4 gap-1">
+            <MemoPlayerControls
+              song={song}
+              radio={radio}
+              podcast={podcast}
               audioRef={getAudioRef()}
-              disabled={!song && !radio && !podcast}
             />
 
-            {isSong && <MemoPlayerExpandButton disabled={!song} />}
-            {isSong && hasPiPSupport && <MemoMiniPlayerButton />}
+            {(isSong || isPodcast) && (
+              <MemoPlayerProgress audioRef={getAudioRef()} />
+            )}
+          </div>
+          {/* Remain Controls and Volume */}
+          <div className="flex items-center w-full justify-end">
+            <div className="flex items-center gap-1">
+              {isSong && (
+                <>
+                  <MemoPlayerLikeButton disabled={!song} />
+                  <MemoLyricsButton disabled={!song} />
+                  <MemoPlayerQueueButton disabled={!song} />
+                </>
+              )}
+              {isPodcast && <MemoPodcastPlaybackRate />}
+              {(isRadio || isPodcast) && (
+                <MemoPlayerClearQueueButton disabled={!radio && !podcast} />
+              )}
+
+              <MemoPlayerVolume
+                audioRef={getAudioRef()}
+                disabled={!song && !radio && !podcast}
+              />
+
+              {isSong && <MemoPlayerExpandButton disabled={!song} />}
+              {isSong && hasPiPSupport && <MemoMiniPlayerButton />}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {isSong && song && (
         <AudioPlayer

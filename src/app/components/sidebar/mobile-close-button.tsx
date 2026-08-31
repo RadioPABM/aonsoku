@@ -13,7 +13,7 @@ export function MobileCloseButton() {
         variant="ghost"
         onClick={() => setOpenMobile(false)}
         size="icon"
-        className="size-8"
+        className="size-10"
       >
         <XIcon className="size-4" />
       </Button>

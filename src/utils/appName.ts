@@ -7,7 +7,8 @@ export function getAppInfo() {
     name: appName,
     version,
     url: repository.url,
-    tg_url: "https://t.me/pabm_new"
+    releaseUrl: `${repository.url}/releases/latest`,
+    tg_url: 'https://t.me/pabm_new',
   }
 }
 

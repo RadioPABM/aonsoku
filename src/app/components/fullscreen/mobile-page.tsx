@@ -2,10 +2,16 @@ import clsx from 'clsx'
 import { ChevronDownIcon, ListMusicIcon, MicVocalIcon } from 'lucide-react'
 import { useState } from 'react'
 import { ImageLoader } from '@/app/components/image-loader'
+import { PodcastPlaybackRate } from '@/app/components/player/podcast-playback-rate'
 import { QueueSongList } from '@/app/components/queue/song-list'
 import { Button } from '@/app/components/ui/button'
 import { Drawer, DrawerContent, DrawerTitle } from '@/app/components/ui/drawer'
-import { usePlayerCurrentSong, usePlayerFullscreen } from '@/store/player.store'
+import {
+  usePlayerCurrentSong,
+  usePlayerFullscreen,
+  usePlayerMediaType,
+  usePlayerSonglist,
+} from '@/store/player.store'
 import { FullscreenBackdrop } from './backdrop'
 import { buttonsStyle, FullscreenControls } from './controls'
 import { LikeButton } from './like-button'
@@ -17,6 +23,7 @@ type MobileTab = 'cover' | 'lyrics' | 'queue'
 
 export function MobileFullscreenMode() {
   const { isFullscreen, setIsFullscreen } = usePlayerFullscreen()
+  const { isSong, isPodcast } = usePlayerMediaType()
   const [tab, setTab] = useState<MobileTab>('cover')
 
   function toggleTab(value: MobileTab) {
@@ -78,21 +85,26 @@ export function MobileFullscreenMode() {
           </div>
 
           <div className="flex items-center justify-between mt-2">
-            <LikeButton />
+            {isSong ? <LikeButton /> : <div />}
 
-            <div className="flex items-center">
-              <TabButton
-                active={tab === 'lyrics'}
-                onClick={() => toggleTab('lyrics')}
-              >
-                <MicVocalIcon className={buttonsStyle.secondaryIcon} />
-              </TabButton>
-              <TabButton
-                active={tab === 'queue'}
-                onClick={() => toggleTab('queue')}
-              >
-                <ListMusicIcon className={buttonsStyle.secondaryIcon} />
-              </TabButton>
+            <div className="flex items-center gap-2">
+              {isPodcast && <PodcastPlaybackRate />}
+              {isSong && (
+                <>
+                  <TabButton
+                    active={tab === 'lyrics'}
+                    onClick={() => toggleTab('lyrics')}
+                  >
+                    <MicVocalIcon className={buttonsStyle.secondaryIcon} />
+                  </TabButton>
+                  <TabButton
+                    active={tab === 'queue'}
+                    onClick={() => toggleTab('queue')}
+                  >
+                    <ListMusicIcon className={buttonsStyle.secondaryIcon} />
+                  </TabButton>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -102,7 +114,23 @@ export function MobileFullscreenMode() {
 }
 
 function MobileCover() {
+  const { isPodcast } = usePlayerMediaType()
+  const { podcastList, currentSongIndex } = usePlayerSonglist()
   const { coverArt, title, artist } = usePlayerCurrentSong()
+
+  const podcast = podcastList[currentSongIndex]
+
+  if (isPodcast) {
+    return (
+      <div className="w-full max-w-[min(100%,70vh)] aspect-square rounded-lg overflow-hidden bg-accent/60 shadow-custom-5">
+        <img
+          src={podcast?.image_url || '/default_podcast_art.png'}
+          alt={podcast?.title}
+          className="size-full object-cover"
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="w-full max-w-[min(100%,70vh)] aspect-square rounded-lg overflow-hidden bg-accent/60 shadow-custom-5">
@@ -144,18 +172,26 @@ function TabButton({ active, onClick, children }: TabButtonProps) {
 }
 
 function MobileSongInfo() {
+  const { isPodcast } = usePlayerMediaType()
+  const { podcastList, currentSongIndex } = usePlayerSonglist()
   const { title, artist, album } = usePlayerCurrentSong()
+
+  const podcast = podcastList[currentSongIndex]
+
+  const mainTitle = isPodcast ? podcast?.title : title
+  const subtitle = isPodcast
+    ? podcast?.podcast.title
+    : [artist, album].filter(Boolean).join(' • ')
 
   return (
     <div className="w-full flex flex-col overflow-hidden mt-4">
       <MarqueeTitle gap="mr-6">
         <h2 className="text-2xl font-bold tracking-tight text-shadow-md py-1">
-          {title}
+          {mainTitle}
         </h2>
       </MarqueeTitle>
       <p className="text-sm text-foreground/70 truncate text-shadow-lg">
-        {artist}
-        {album ? ` • ${album}` : ''}
+        {subtitle}
       </p>
     </div>
   )

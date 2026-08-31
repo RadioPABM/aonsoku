@@ -37,7 +37,7 @@ export default function Artist() {
 
   if (artistIsLoading) return <AlbumFallback />
   if (isFetched && !artist) {
-    return <ErrorPage status={404} statusText="Not Found" />
+    return <ErrorPage status={404} />
   }
   if (!artist) return <AlbumFallback />
 

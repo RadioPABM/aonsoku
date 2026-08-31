@@ -791,5 +791,14 @@
       "shuffleTracks": "Перемешать треки",
       "shuffleAlbums": "Перемешать альбомы"
     }
+  },
+  "error": {
+    "title": "Упс!",
+    "statusCode": "Код статуса",
+    "description": "Описание",
+    "none": "Нет",
+    "unhandled": "Необработанная ошибка",
+    "notFound": "Не найдено",
+    "backToHome": "На главную"
   }
 }

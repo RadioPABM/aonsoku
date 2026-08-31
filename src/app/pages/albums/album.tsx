@@ -45,7 +45,7 @@ export default function Album() {
 
   if (albumIsLoading) return <AlbumFallback />
   if (isFetched && !album) {
-    return <ErrorPage status={404} statusText="Not Found" />
+    return <ErrorPage status={404} />
   }
   if (!album) return <AlbumFallback />
 

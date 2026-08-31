@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import clsx from 'clsx'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import ImageHeader from '@/app/components/album/image-header'
 import { AlbumGridCard } from '@/app/components/albums/album-grid-card'
 import { GenreFallback } from '@/app/components/fallbacks/genre-fallbacks'
@@ -22,6 +22,7 @@ export default function Genre() {
   const { t } = useTranslation()
   const buttonsRef = useRef<HTMLDivElement>(null)
   const { isSticky } = useDetectSticky(buttonsRef)
+  const { pathname, search } = useLocation()
 
   const genre = decodeURIComponent(genreName)
 
@@ -33,6 +34,14 @@ export default function Genre() {
     gcTime: 0,
   })
 
+  useEffect(() => {
+    saveGridClickedItem({
+      name: 'genre',
+      offsetTop: 0,
+      routeKey: pathname + search,
+    })
+  }, [pathname, search])
+
   const coverArtId = useMemo(() => {
     if (!data?.list) return undefined
 
@@ -43,17 +52,11 @@ export default function Genre() {
 
   if (isLoading) return <GenreFallback />
   if (isFetched && !data?.list) {
-    return <ErrorPage status={404} statusText="Not Found" />
+    return <ErrorPage status={404} />
   }
   if (!data?.list) return <GenreFallback />
 
   const albums = data.list
-
-  saveGridClickedItem({
-    name: 'genre',
-    offsetTop: 0,
-    routeKey: location.pathname + location.search,
-  })
 
   const badges: BadgesData = [
     {
@@ -82,7 +85,7 @@ export default function Genre() {
         ref={buttonsRef}
         className={clsx(
           'transition-opacity duration-500',
-          isSticky && 'opacity-0',
+          isSticky && 'opacity-0 pointer-events-none',
         )}
       >
         <GenreButtons genre={genre} />

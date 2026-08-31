@@ -23,17 +23,13 @@ export default function Playlist() {
   const columns = songsColumns()
   const { setSongList } = usePlayerActions()
 
-  const {
-    data: playlist,
-    isLoading,
-    isFetching,
-  } = useQuery({
+  const { data: playlist, isLoading } = useQuery({
     queryKey: [queryKeys.playlist.single, playlistId],
     queryFn: () => subsonic.playlists.getOne(playlistId),
   })
 
-  if (isFetching || isLoading) return <PlaylistFallback />
-  if (!playlist) return <ErrorPage status={404} statusText="Not Found" />
+  if (isLoading) return <PlaylistFallback />
+  if (!playlist) return <ErrorPage status={404} />
 
   const columnsToShow: ColumnFilter[] = [
     'index',

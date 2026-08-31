@@ -26,6 +26,7 @@ import { isMacOs } from 'react-device-detect'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { SongMenuOptions } from '@/app/components/song/menu-options'
 import { SelectedSongsMenuOptions } from '@/app/components/song/selected-options'
+import i18n from '@/i18n'
 import { ColumnFilter } from '@/types/columnFilter'
 import { ColumnDefType } from '@/types/react-table/columnDef'
 import { ISong } from '@/types/responses/song'
@@ -71,7 +72,7 @@ export function DataTableList<TData, TValue>({
   data,
   handlePlaySong,
   columnFilter,
-  noRowsMessage = 'No results.',
+  noRowsMessage,
   showHeader = true,
   allowRowSelection = true,
   showContextMenu = true,
@@ -315,7 +316,7 @@ export function DataTableList<TData, TValue>({
   }, [virtualizer.scrollElement, debouncedHandleScroll])
 
   useEffect(() => {
-    if (!scrollToIndex || !currentSongIndex) return
+    if (!scrollToIndex || currentSongIndex === undefined) return
 
     virtualizer.scrollToIndex(currentSongIndex, {
       align: 'start',
@@ -379,7 +380,7 @@ export function DataTableList<TData, TValue>({
                   className="flex h-24 items-center justify-center p-2"
                   role="cell"
                 >
-                  {noRowsMessage}
+                  {noRowsMessage ?? i18n.t('command.noResults')}
                 </div>
               </div>
             )}

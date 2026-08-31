@@ -25,7 +25,7 @@ export default function Podcast() {
 
   if (podcastIsLoading) return <PodcastFallback />
   if (isFetched && !podcast) {
-    return <ErrorPage status={404} statusText="Not Found" />
+    return <ErrorPage status={404} />
   }
   if (!podcast) return <PodcastFallback />
 

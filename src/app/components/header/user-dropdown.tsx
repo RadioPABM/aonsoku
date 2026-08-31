@@ -1,4 +1,4 @@
-import { Info, Keyboard, LogOut, User, Key } from 'lucide-react'
+import { Info, Key, Keyboard, LogOut, User } from 'lucide-react'
 import { useState } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import { useHotkeys } from 'react-hotkeys-hook'
@@ -19,11 +19,12 @@ import {
 import { ChangePasswordModal } from '@/app/components/user/ChangePasswordModal'
 
 import { LogoutObserver } from '@/app/observers/logout-observer'
+import { cn } from '@/lib/utils'
 import { logoutKeys, shortcutDialogKeys, stringifyShortcut } from '@/shortcuts'
 import { useAppData, useAppStore } from '@/store/app.store'
 import { isMacOS } from '@/utils/desktop'
 
-export function UserDropdown() {
+export function UserDropdown({ className }: { className?: string }) {
   const { username, url, lockUser } = useAppData()
   const setLogoutDialogState = useAppStore(
     (state) => state.actions.setLogoutDialogState,
@@ -45,12 +46,14 @@ export function UserDropdown() {
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
       <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
       <ChangePasswordModal
-      isOpen={isChangePasswordOpen}
-      onClose={() => setIsChangePasswordOpen(false)}
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
       />
       <DropdownMenu>
         <DropdownMenuTrigger className="user-dropdown-trigger">
-          <Avatar className="w-8 h-8 rounded-full cursor-pointer">
+          <Avatar
+            className={cn('w-8 h-8 rounded-full cursor-pointer', className)}
+          >
             <AvatarFallback className="text-sm bg-transparent hover:bg-accent">
               <User className="w-4 h-4" />
             </AvatarFallback>

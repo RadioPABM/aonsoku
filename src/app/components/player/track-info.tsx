@@ -1,56 +1,23 @@
-import randomCSSHexColor from '@chriscodesthings/random-css-hex-color'
 import { AudioLines } from 'lucide-react'
-import { useCallback } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import { useTranslation } from 'react-i18next'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { Link } from 'react-router-dom'
-
-import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
 import { AnimatedCoverVideo } from '@/app/components/album/animated-cover-video'
+import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
 import { ImageLoader } from '@/app/components/image-loader'
+import {
+  songImageId,
+  useSongImageColor,
+} from '@/app/hooks/use-song-image-color'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes/routesList'
-import { useSongColor } from '@/store/player.store'
 import { ISong } from '@/types/responses/song'
-import { getAverageColor } from '@/utils/getAverageColor'
-import { logger } from '@/utils/logger'
 import { ALBUM_ARTISTS_MAX_NUMBER } from '@/utils/multipleArtists'
 
 export function TrackInfo({ song }: { song: ISong | undefined }) {
   const { t } = useTranslation()
-  const { setCurrentSongColor, currentSongColor } = useSongColor()
-
-  const getImageElement = useCallback(() => {
-    return document.getElementById('track-song-image') as HTMLImageElement
-  }, [])
-
-  const getImageColor = useCallback(async () => {
-    const img = getImageElement()
-    if (!img) return
-
-    let color = randomCSSHexColor(true)
-
-    try {
-      color = (await getAverageColor(img)).hex
-      logger.info('[TrackInfo] - Getting Image Average Color', {
-        color,
-      })
-    } catch {
-      logger.error('[TrackInfo] - Unable to get image average color.')
-    }
-
-    if (color !== currentSongColor) {
-      setCurrentSongColor(color)
-    }
-  }, [currentSongColor, setCurrentSongColor, getImageElement])
-
-  function handleError() {
-    const img = getImageElement()
-    if (!img) return
-
-    img.crossOrigin = null
-  }
+  const { getImageColor, handleError } = useSongImageColor()
 
   if (!song) {
     return (
@@ -78,7 +45,7 @@ export function TrackInfo({ song }: { song: ISong | undefined }) {
             {(src) => (
               <LazyLoadImage
                 key={song.id}
-                id="track-song-image"
+                id={songImageId}
                 src={src}
                 width="100%"
                 height="100%"

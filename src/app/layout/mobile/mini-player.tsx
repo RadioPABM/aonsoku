@@ -2,6 +2,10 @@ import { AudioLines, Pause, Play, RadioIcon, SkipForward } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { ImageLoader } from '@/app/components/image-loader'
 import { Button } from '@/app/components/ui/button'
+import {
+  songImageId,
+  useSongImageColor,
+} from '@/app/hooks/use-song-image-color'
 import { cn } from '@/lib/utils'
 import {
   usePlayerActions,
@@ -67,7 +71,7 @@ export function MobileMiniPlayer() {
         <button
           type="button"
           disabled={isEmpty}
-          onClick={() => isSong && setIsFullscreen(true)}
+          onClick={() => (isSong || isPodcast) && setIsFullscreen(true)}
           className="flex items-center gap-3 flex-1 min-w-0 h-full text-left disabled:opacity-100"
         >
           <MiniCover song={song} podcast={podcast} isRadio={isRadio} />
@@ -124,6 +128,8 @@ interface MiniCoverProps {
 }
 
 function MiniCover({ song, podcast, isRadio }: MiniCoverProps) {
+  const { getImageColor, handleError } = useSongImageColor()
+
   const baseClass =
     'size-11 min-w-11 rounded overflow-hidden bg-muted flex items-center justify-center shadow-sm'
 
@@ -157,16 +163,20 @@ function MiniCover({ song, podcast, isRadio }: MiniCoverProps) {
 
   return (
     <div className={baseClass}>
-      <ImageLoader id={song.coverArt} type="song" size={100}>
+      <ImageLoader id={song.coverArt} type="song" size={400}>
         {(src, isLoading) => (
           <img
             key={song.id}
+            id={songImageId}
             src={src}
             alt={song.title}
+            crossOrigin="anonymous"
             className={cn(
               'size-full object-cover transition-opacity duration-300',
               isLoading ? 'opacity-0' : 'opacity-100',
             )}
+            onLoad={getImageColor}
+            onError={handleError}
           />
         )}
       </ImageLoader>

@@ -69,7 +69,7 @@ export function EpisodeCardInfo({ episode }: EpisodeCardProps) {
   const { episodeReleaseDate } = useEpisodeReleaseDate(episode.published_at)
 
   return (
-    <div className="flex flex-col flex-1 space-y-1 min-w-64">
+    <div className="flex flex-col flex-1 space-y-1 min-w-0 md:min-w-64">
       <div className="flex gap-1 items-center max-h-4">
         {isEpisodePlaying && isPlaying && (
           <EqualizerBars size={14} className="text-muted-foreground mb-1" />
@@ -175,7 +175,7 @@ export function EpisodeImageButton({ episodeId }: { episodeId: string }) {
     <Button
       variant="ghost"
       size="icon"
-      className="rounded-full bg-background/60 backdrop-blur-md opacity-0 group-hover/row:opacity-100 transition-opacity group-hover/play:bg-background"
+      className="rounded-full bg-background/60 backdrop-blur-md opacity-100 md:opacity-0 md:group-hover/row:opacity-100 transition-opacity group-hover/play:bg-background"
       onClick={handlePlayEpisode}
     >
       {isEpisodePlaying && isPlaying && (
