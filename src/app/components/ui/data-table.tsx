@@ -355,12 +355,23 @@ export function DataTable<TData, TValue>({
 
   const handleRowTap = useCallback(
     (e: TouchEvent<HTMLDivElement>, row: Row<TData>) => {
-      if (endTap() && handlePlaySong) {
+      if (!endTap()) return
+
+      // A tap is the touch equivalent of a single click, so it opens the row's
+      // page when it has one. Playing stays on the double click and on the
+      // rows that have nowhere to navigate to, like songs and radios.
+      if (onRowClick) {
+        e.stopPropagation()
+        onRowClick(row)
+        return
+      }
+
+      if (handlePlaySong) {
         e.stopPropagation()
         handlePlaySong(row)
       }
     },
-    [endTap, handlePlaySong],
+    [endTap, handlePlaySong, onRowClick],
   )
 
   function handleDiscNumber(index: number) {

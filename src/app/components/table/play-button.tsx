@@ -64,12 +64,13 @@ export default function PlaySongButton({
       )}
       {isCurrentSongPlaying() && isPlaying && (
         <div className="relative w-full h-full flex items-center justify-center">
-          <div className="absolute opacity-100 group-hover/tablerow:opacity-0 w-8 h-8 flex items-center">
+          <div className="absolute opacity-100 md:group-hover/tablerow:opacity-0 w-8 h-8 flex items-center">
             <div className="w-8 h-8 flex items-center justify-center">
               <EqualizerBars size={18} className="mb-1" />
             </div>
           </div>
-          <div className="absolute opacity-0 group-hover/tablerow:opacity-100 flex justify-center">
+          {/* Hidden on touch, where it would be an invisible tap target. */}
+          <div className="absolute hidden md:flex opacity-0 group-hover/tablerow:opacity-100 justify-center">
             <Button
               className="w-8 h-8 rounded-full group hover:bg-background hover:shadow-sm border-0"
               size="icon"

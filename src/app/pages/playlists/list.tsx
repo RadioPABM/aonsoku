@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import clsx from 'clsx'
 import { PlusIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 import { ShadowHeader } from '@/app/components/album/shadow-header'
 import { SongListFallback } from '@/app/components/fallbacks/song-fallbacks'
@@ -12,6 +13,7 @@ import { Button } from '@/app/components/ui/button'
 import { DataTable } from '@/app/components/ui/data-table'
 import ErrorPage from '@/app/pages/error-page'
 import { playlistsColumns } from '@/app/tables/playlists-columns'
+import { ROUTES } from '@/routes/routesList'
 import { subsonic } from '@/service/subsonic'
 import { usePlayerActions } from '@/store/player.store'
 import { usePlaylists } from '@/store/playlists.store'
@@ -21,6 +23,7 @@ export default function PlaylistsPage() {
   const { setPlaylistDialogState } = usePlaylists()
   const { setSongList } = usePlayerActions()
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const { data: playlists, isLoading } = useQuery({
     queryKey: [queryKeys.playlist.all],
@@ -78,6 +81,9 @@ export default function PlaylistsPage() {
             showSearch={true}
             searchColumn="name"
             handlePlaySong={(row) => handlePlayPlaylist(row.original.id)}
+            onRowClick={(row) =>
+              navigate(ROUTES.PLAYLIST.PAGE(row.original.id))
+            }
             allowRowSelection={false}
             dataType="playlist"
             noRowsMessage={t('options.playlist.notFound')}
