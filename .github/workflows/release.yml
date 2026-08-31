@@ -157,9 +157,27 @@ jobs:
 
       - name: Decode keystore
         if: env.HAS_KEYSTORE == 'true'
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
-          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> $GITHUB_ENV
+          KEYSTORE="$RUNNER_TEMP/release.keystore"
+
+          # The secret picks up line breaks on its way through the browser, and
+          # a single CR is enough for base64 to reject the whole input.
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" \
+            | tr -d '[:space:]' \
+            | base64 -d > "$KEYSTORE"
+
+          if ! keytool -list -keystore "$KEYSTORE" \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" > /dev/null; then
+            echo "::error::The keystore could not be read. Check that" \
+              "ANDROID_KEYSTORE_BASE64 holds the base64 of the keystore file" \
+              "and that ANDROID_KEYSTORE_PASSWORD matches it."
+            exit 1
+          fi
+
+          echo "ANDROID_KEYSTORE_PATH=$KEYSTORE" >> $GITHUB_ENV
 
       - name: Build release APK
         if: env.HAS_KEYSTORE == 'true'
