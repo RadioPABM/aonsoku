@@ -47,7 +47,7 @@ export function HeaderItem({ song }: { song: ISong }) {
   return (
     <div
       className={clsx(
-        'w-full h-[250px] 2xl:h-[300px] relative',
+        'w-full h-[190px] md:h-[250px] 2xl:h-[300px] relative',
         isFirefox && 'bg-black/60',
       )}
     >
@@ -58,7 +58,7 @@ export function HeaderItem({ song }: { song: ISong }) {
               <BlurredCanvas src={src} blur={16} className="scale-110" />
             </div>
             <div className="w-full h-full absolute z-10 bg-gradient-to-b from-transparent to-background-foreground">
-              <div className="flex h-full px-8 py-6 gap-4">
+              <div className="flex h-full px-4 md:px-8 py-4 md:py-6 gap-3 md:gap-4">
                 <div
                   className="h-full aspect-square relative group bg-skeleton rounded-lg"
                   data-testid="header-image-container"
@@ -74,7 +74,7 @@ export function HeaderItem({ song }: { song: ISong }) {
                   />
                   <div className="w-full h-full flex items-center justify-center rounded-lg bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-colors duration-300 absolute inset-0 z-10">
                     <Button
-                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full w-14 h-14"
+                      className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 rounded-full w-11 h-11 md:w-14 md:h-14"
                       variant="outline"
                       onClick={handlePlayButton}
                       data-testid={dataTestId}
@@ -87,8 +87,8 @@ export function HeaderItem({ song }: { song: ISong }) {
                     </Button>
                   </div>
                 </div>
-                <div className="flex flex-1 h-full flex-col justify-end">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-1 min-w-0 h-full flex-col justify-end">
+                  <div className="flex items-center gap-2 min-w-0">
                     {isAlbumPlaying && (
                       <EqualizerBars
                         size={24}
@@ -101,7 +101,7 @@ export function HeaderItem({ song }: { song: ISong }) {
                     >
                       <h1
                         data-testid="header-title"
-                        className="w-full scroll-m-20 text-3xl 2xl:text-4xl font-bold tracking-tight mb-0 2xl:mb-1 hover:underline"
+                        className="w-full scroll-m-20 text-xl md:text-3xl 2xl:text-4xl font-bold tracking-tight mb-0 2xl:mb-1 line-clamp-2 hover:underline"
                       >
                         {song.title}
                       </h1>
@@ -110,7 +110,7 @@ export function HeaderItem({ song }: { song: ISong }) {
                   {!song.artistId ? (
                     <h4
                       data-testid="header-artist"
-                      className="scroll-m-20 text-lg 2xl:text-xl font-semibold tracking-tight opacity-70"
+                      className="scroll-m-20 text-sm md:text-lg 2xl:text-xl font-semibold tracking-tight opacity-70 truncate"
                     >
                       {song.artist}
                     </h4>
@@ -121,13 +121,13 @@ export function HeaderItem({ song }: { song: ISong }) {
                     >
                       <h4
                         data-testid="header-artist"
-                        className="scroll-m-20 text-lg 2xl:text-xl font-semibold tracking-tight opacity-70 hover:underline"
+                        className="scroll-m-20 text-sm md:text-lg 2xl:text-xl font-semibold tracking-tight opacity-70 truncate hover:underline"
                       >
                         {song.artist}
                       </h4>
                     </Link>
                   )}
-                  <div className="flex gap-2 mt-1 2xl:mt-2">
+                  <div className="flex flex-wrap gap-1.5 md:gap-2 mt-1 2xl:mt-2">
                     {song.genre !== undefined && (
                       <Link
                         to={ROUTES.ALBUMS.GENRE(song.genre)}

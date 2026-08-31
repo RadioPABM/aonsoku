@@ -4,6 +4,8 @@ import { getProxyURL } from '@/api/podcastClient'
 import { MiniPlayerButton } from '@/app/components/mini-player/button'
 import { RadioInfo } from '@/app/components/player/radio-info'
 import { TrackInfo } from '@/app/components/player/track-info'
+import { useIsMobile } from '@/app/hooks/use-mobile'
+import { cn } from '@/lib/utils'
 import { podcasts } from '@/service/podcasts'
 import {
   getVolume,
@@ -47,6 +49,7 @@ const MemoLyricsButton = memo(PlayerLyricsButton)
 const MemoMiniPlayerButton = memo(MiniPlayerButton)
 
 export function Player() {
+  const isMobile = useIsMobile()
   const audioRef = useRef<HTMLAudioElement>(null)
   const radioRef = useRef<HTMLAudioElement>(null)
   const podcastRef = useRef<HTMLAudioElement>(null)
@@ -188,7 +191,15 @@ export function Player() {
   }, [song, replayGainDefaultGain, replayGainPreAmp, replayGainType])
 
   return (
-    <footer className="border-t h-[--player-height] w-full flex items-center fixed bottom-0 left-0 right-0 z-40 bg-background">
+    <footer
+      className={cn(
+        // On mobile the UI lives in the mini player, but the audio elements
+        // below must stay mounted.
+        isMobile
+          ? 'hidden'
+          : 'border-t h-[--player-height] w-full flex items-center fixed bottom-0 left-0 right-0 z-40 bg-background',
+      )}
+    >
       <div className="w-full h-full grid grid-cols-player gap-2 px-4">
         {/* Track Info */}
         <div className="flex items-center gap-2 w-full">

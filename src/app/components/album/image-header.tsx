@@ -59,7 +59,7 @@ export default function ImageHeader({
       {(src, isLoading) => (
         <div
           id="image-header-container"
-          className="flex relative w-full h-[calc(3rem+200px)] 2xl:h-[calc(3rem+250px)]"
+          className="flex relative w-full h-[calc(3rem+170px)] md:h-[calc(3rem+200px)] 2xl:h-[calc(3rem+250px)]"
           key={`header-${coverArtId}`}
         >
           {isLoading && (
@@ -69,14 +69,15 @@ export default function ImageHeader({
           )}
           <div
             className={cn(
-              'w-full px-8 py-6 flex gap-4 absolute inset-0',
+              'w-full px-4 md:px-8 py-6 flex gap-4 absolute inset-0',
               'bg-gradient-to-b from-background/20 to-background/50',
             )}
             style={{ backgroundColor: bgColor }}
           >
             <div
               className={cn(
-                'w-[200px] h-[200px] min-w-[200px] min-h-[200px]',
+                'w-[140px] h-[140px] min-w-[140px] min-h-[140px]',
+                'md:w-[200px] md:h-[200px] md:min-w-[200px] md:min-h-[200px]',
                 '2xl:w-[250px] 2xl:h-[250px] 2xl:min-w-[250px] 2xl:min-h-[250px]',
                 'bg-skeleton aspect-square bg-cover bg-center rounded',
                 'shadow-header-image overflow-hidden relative',
@@ -105,8 +106,8 @@ export default function ImageHeader({
               />
             </div>
 
-            <div className="flex w-full max-w-[calc(100%-216px)] 2xl:max-w-[calc(100%-266px)] flex-col justify-end z-10">
-              <p className="text-xs 2xl:text-sm font-medium text-shadow-md">
+            <div className="flex w-full max-w-[calc(100%-156px)] md:max-w-[calc(100%-216px)] 2xl:max-w-[calc(100%-266px)] flex-col justify-end z-10">
+              <p className="text-xs 2xl:text-sm font-medium text-shadow-md truncate">
                 {type}
               </p>
               <h1
@@ -119,7 +120,7 @@ export default function ImageHeader({
               </h1>
 
               {!isPlaylist && artists && hasMultipleArtists && (
-                <div className="flex items-center mt-2">
+                <div className="flex flex-wrap items-center gap-y-1 mt-2">
                   <AlbumMultipleArtistsInfo artists={artists} />
                   <HeaderInfoGenerator badges={badges} />
                 </div>
@@ -128,7 +129,7 @@ export default function ImageHeader({
               {!isPlaylist && subtitle && !hasMultipleArtists && (
                 <>
                   {artistId ? (
-                    <div className="flex items-center mt-2">
+                    <div className="flex flex-wrap items-center gap-y-1 mt-2">
                       <AlbumArtistInfo id={artistId} name={subtitle} />
                       <HeaderInfoGenerator badges={badges} />
                     </div>

@@ -36,7 +36,7 @@ interface OptionsData {
 const accountsOption: OptionsData = { id: 'accounts', icon: CircleUserRound }
 const desktopOption: OptionsData = { id: 'desktop', icon: LaptopIcon }
 
-const options: OptionsData[] = [
+export const settingsOptions: OptionsData[] = [
   { id: 'appearance', icon: Paintbrush },
   { id: 'language', icon: Globe },
   { id: 'audio', icon: Headphones },
@@ -53,7 +53,7 @@ export function SettingsOptions() {
     <SidebarGroup>
       <SidebarGroupContent>
         <SidebarMenu>
-          {options.map((item) => (
+          {settingsOptions.map((item) => (
             <SidebarMenuItem key={item.id}>
               <SidebarMenuButton
                 isActive={item.id === currentPage}

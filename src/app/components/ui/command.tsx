@@ -26,7 +26,7 @@ const CommandDialog = ({ children, ...props }: DialogProps) => {
     <Dialog {...props}>
       <DialogTitle className="sr-only">Search Dialog</DialogTitle>
       <DialogContent
-        className="overflow-hidden p-0 shadow-lg bg-transparent"
+        className="overflow-hidden p-0 shadow-lg bg-transparent w-[calc(100%-1.5rem)] md:w-full"
         aria-describedby={undefined}
       >
         {children}

@@ -25,7 +25,7 @@ export function AlbumsHeader({ albumCount }: AlbumsHeaderProps) {
 
   return (
     <ShadowHeader>
-      <div className="w-full flex justify-between">
+      <div className="w-full flex justify-between items-center gap-2 min-w-0">
         <HeaderTitle title={label} count={albumCount} />
 
         <AlbumsFilter />

@@ -33,7 +33,13 @@ export type CommandItemProps = {
   runCommand: (command: () => unknown) => void
 }
 
-export default function CommandMenu() {
+interface CommandMenuProps {
+  // The mobile shell keeps a mounted instance only for the dialog, since the
+  // sidebar (and its trigger) is unmounted while the sheet is closed.
+  hideTrigger?: boolean
+}
+
+export default function CommandMenu({ hideTrigger = false }: CommandMenuProps) {
   const { t } = useTranslation()
   const { state: sidebarState } = useMainSidebar()
   const { open, setOpen } = useAppStore((state) => state.command)
@@ -127,7 +133,7 @@ export default function CommandMenu() {
 
   return (
     <>
-      {sidebarOpen && (
+      {sidebarOpen && !hideTrigger && (
         <Button
           variant="outline"
           className="flex justify-start w-full px-2 gap-2 relative min-w-max active:scale-[98%] transition hover:bg-background-foreground/80"

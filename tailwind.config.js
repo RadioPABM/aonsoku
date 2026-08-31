@@ -28,6 +28,12 @@ module.exports = {
         'shadow-header': 'var(--shadow-header-height)',
         'shadow-header-distance': 'var(--shadow-header-distance)',
         toast: 'var(--toastify-toast-container-height)',
+        'mobile-header': 'var(--mobile-header-height)',
+        'mobile-nav': 'var(--mobile-nav-height)',
+        'mobile-mini-player': 'var(--mobile-mini-player-height)',
+        'mobile-player': 'var(--mobile-player-height)',
+        'mobile-content': 'var(--mobile-content-height)',
+        'mobile-safe-bottom': 'var(--mobile-safe-bottom)',
       },
       colors: {
         border: 'hsl(var(--border))',

@@ -13,15 +13,19 @@ export function HeaderTitle({
   loading = false,
 }: HeaderTitleProps) {
   return (
-    <div className="flex gap-2 items-center">
-      <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
+    <div className="flex gap-2 items-center min-w-0">
+      <h2 className="text-xl md:text-2xl font-semibold tracking-tight truncate">
+        {title}
+      </h2>
       {loading && (
-        <Badge variant="secondary">
+        <Badge variant="secondary" className="shrink-0">
           <Loader2 className="h-4 w-4 animate-spin" />
         </Badge>
       )}
       {!loading && count !== undefined && count > 0 && (
-        <Badge variant="secondary">{count}</Badge>
+        <Badge variant="secondary" className="shrink-0">
+          {count}
+        </Badge>
       )}
     </div>
   )

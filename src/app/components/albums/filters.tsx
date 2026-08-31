@@ -19,7 +19,7 @@ export function AlbumsFilter() {
   )
 
   return (
-    <div className="flex gap-2 flex-1 justify-end">
+    <div className="flex gap-2 flex-1 justify-end items-center min-w-0">
       {currentFilter === AlbumsFilters.ByYear && <AlbumsFilterByYear />}
 
       {currentFilter === AlbumsFilters.ByGenre && <AlbumsFilterByGenre />}

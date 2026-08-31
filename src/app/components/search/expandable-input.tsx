@@ -93,7 +93,7 @@ export function ExpandableSearchInput({ ...props }: SearchInputProps) {
     <form onSubmit={handleSubmit}>
       <div
         ref={searchRef}
-        className="relative inline-block w-fit min-w-9 h-9 align-bottom rounded-md overflow-hidden"
+        className="relative inline-block w-fit min-w-9 h-9 shrink-0 align-bottom rounded-md overflow-hidden"
       >
         <Input
           id="search"
@@ -104,7 +104,7 @@ export function ExpandableSearchInput({ ...props }: SearchInputProps) {
             'focus-visible:ring-transparent ring-offset-background',
             'focus-visible:ring-offset-0 focus-visible:ring-0',
             searchActive
-              ? 'w-[260px] pr-9 text-foreground placeholder:opacity-100'
+              ? 'w-[160px] md:w-[260px] pr-9 text-foreground placeholder:opacity-100'
               : 'w-9 text-transparent placeholder:opacity-0',
           )}
           {...props}

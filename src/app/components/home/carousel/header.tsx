@@ -41,7 +41,7 @@ export function HomeHeader() {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <div className="absolute right-[5rem] bottom-10">
+      <div className="hidden md:block absolute right-[5rem] bottom-10">
         <CarouselPrevious
           data-testid="header-carousel-previous"
           className="-left-6 shadow-sm"

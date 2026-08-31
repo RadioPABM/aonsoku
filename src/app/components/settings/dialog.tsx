@@ -6,14 +6,19 @@ import {
   SidebarContent,
   SidebarProvider,
 } from '@/app/components/ui/sidebar'
+import { useIsMobile } from '@/app/hooks/use-mobile'
 import { useAppSettings } from '@/store/app.store'
 import { SettingsBreadcrumb } from './breadcrumb'
+import { SettingsMobileDialog } from './mobile-dialog'
 import { SettingsOptions } from './options'
 import { Pages } from './pages'
 
 export function SettingsDialog() {
   const { t } = useTranslation()
   const { openDialog, setOpenDialog } = useAppSettings()
+  const isMobile = useIsMobile()
+
+  if (isMobile) return <SettingsMobileDialog />
 
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>

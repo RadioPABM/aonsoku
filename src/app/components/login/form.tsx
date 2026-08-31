@@ -50,10 +50,8 @@ const loginSchema = z.object({
     .refine((value) => /^https?:\/\//.test(value), {
       message: 'login.form.validations.protocol',
     }),
-  username: z
-    .string({ required_error: 'login.form.validations.username' }),
-  password: z
-    .string({ required_error: 'login.form.validations.password' }),
+  username: z.string({ required_error: 'login.form.validations.username' }),
+  password: z.string({ required_error: 'login.form.validations.password' }),
 })
 
 type FormData = z.infer<typeof loginSchema>
@@ -114,7 +112,7 @@ export function LoginForm() {
 
   return (
     <>
-      <Card className="w-[450px] bg-background-foreground">
+      <Card className="w-full max-w-[450px] my-auto bg-background-foreground">
         <Form {...form}>
           <form onSubmit={form.handleSubmit((data) => onSubmit(data))}>
             <CardHeader className="flex">

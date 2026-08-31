@@ -19,7 +19,7 @@ export function ThemeSettingsPicker() {
   return (
     <div className="h-full space-y-4">
       <ContentItemTitle>{t('theme.label')}</ContentItemTitle>
-      <div className="w-full h-full grid grid-cols-4 gap-3">
+      <div className="w-full h-full grid grid-cols-3 md:grid-cols-4 gap-3">
         {appThemes.map((theme) => {
           const isActive = theme === currentTheme
 
