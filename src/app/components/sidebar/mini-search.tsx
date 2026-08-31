@@ -25,12 +25,15 @@ export function MiniSidebarSearch({
         <Button
           variant="ghost"
           className={cn(
-            'w-full h-fit flex flex-col justify-center items-center gap-1 mr-auto',
+            'w-full mr-auto gap-2',
+            'h-11 justify-start text-base',
+            'md:h-fit md:flex-col md:justify-center md:items-center md:gap-1',
             className,
           )}
           onClick={() => setOpen(true)}
         >
-          <SearchIcon className="w-4 h-4" />
+          <SearchIcon className="size-5 md:size-4" />
+          <span className="md:hidden">{t('sidebar.miniSearch')}</span>
         </Button>
       </SimpleTooltip>
     </div>

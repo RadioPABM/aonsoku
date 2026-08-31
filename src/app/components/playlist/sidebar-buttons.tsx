@@ -14,7 +14,7 @@ export function SidebarPlaylistButtons() {
         <Button
           size="icon"
           variant="default"
-          className="w-6 h-6 p-[5px]"
+          className="size-8 p-1.5 md:size-6 md:p-[5px]"
           onClick={() => setPlaylistDialogState(true)}
         >
           <PlusIcon strokeWidth={3} />

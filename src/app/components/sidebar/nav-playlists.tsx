@@ -38,7 +38,7 @@ export function NavPlaylists() {
       </div>
       <MainSidebarContent
         className={clsx(
-          'flex pl-4 h-full overflow-x-clip transition-[margin,opacity]',
+          'flex pl-4 h-full min-h-[35dvh] md:min-h-0 overflow-x-clip transition-[margin,opacity]',
           'group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0',
           'group-data-[collapsible=icon]:pointer-events-none',
         )}
