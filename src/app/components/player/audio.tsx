@@ -76,15 +76,22 @@ export function AudioPlayer({
 
     toast.error(t('warnings.songError'))
 
-    if (replayGainEnabled || !replayGainError) {
+    // Only a failure while the ReplayGain graph is wired up is worth a reload,
+    // since the AudioContext cannot be detached at runtime. Reloading on any
+    // error loops forever, because the playing state is persisted.
+    if (replayGainEnabled && !replayGainError) {
       setReplayGainEnabled(false)
       setReplayGainError(true)
       window.location.reload()
+      return
     }
+
+    setPlayingState(false)
   }, [
     audioRef,
     replayGainEnabled,
     replayGainError,
+    setPlayingState,
     setReplayGainEnabled,
     setReplayGainError,
     t,

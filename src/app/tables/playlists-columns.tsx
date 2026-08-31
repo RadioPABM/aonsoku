@@ -95,6 +95,7 @@ export function playlistsColumns(): ColumnDefType<Playlist>[] {
         width: 190,
         maxWidth: 190,
       },
+      className: 'hidden md:flex',
       header: ({ column, table }) => (
         <DataTableColumnHeader column={column} table={table}>
           {i18n.t('table.columns.songCount')}
@@ -108,6 +109,7 @@ export function playlistsColumns(): ColumnDefType<Playlist>[] {
         width: 100,
         maxWidth: 100,
       },
+      className: 'hidden md:flex',
       header: () => (
         <SimpleTooltip text={i18n.t('table.columns.duration')}>
           <ClockIcon className="w-4 h-4" />
@@ -127,6 +129,7 @@ export function playlistsColumns(): ColumnDefType<Playlist>[] {
         width: 100,
         maxWidth: 100,
       },
+      className: 'hidden md:flex',
       header: i18n.t('table.columns.public'),
       cell: ({ row }) => (
         <div>

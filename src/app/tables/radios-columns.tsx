@@ -54,6 +54,7 @@ export function radiosColumns(): ColumnDefType<Radio>[] {
         width: '25%',
         maxWidth: '25%',
       },
+      className: 'hidden md:flex',
       header: i18n.t('radios.table.homepage'),
       cell: ({ row }) => {
         const { homePageUrl } = row.original
@@ -84,6 +85,7 @@ export function radiosColumns(): ColumnDefType<Radio>[] {
         maxWidth: '25%',
         marginRight: '1rem',
       },
+      className: 'hidden md:flex',
       header: i18n.t('radios.table.stream'),
       cell: ({ row }) => (
         <div className="truncate">

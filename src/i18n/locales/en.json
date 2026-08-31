@@ -11,7 +11,6 @@
     "miniSearch": "Search",
     "library": "Library",
     "artists": "Artists",
-    "lovedsongs": "Любимые треки",
     "songs": "Songs",
     "albums": "Albums",
     "favorites": "Favorites",
@@ -401,7 +400,7 @@
     }
   },
   "userParams": {
-    "form":{
+    "form": {
       "changePassword": "Change password",
       "changingOwnPassword": "You wanna change your secrets?",
       "oldPassword": "Current password",
@@ -417,7 +416,7 @@
       "cancel": "Cancel",
       "changing": "Changing"
     },
-    "error":{
+    "error": {
       "userDataNotSet": "User Credentials not set",
       "auth": "Authenthication error",
       "tokenFetchError": "Failed to fetch token",

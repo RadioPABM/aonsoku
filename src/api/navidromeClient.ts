@@ -1,8 +1,9 @@
 import { useAppStore } from '@/store/app.store'
 import { AuthType } from '@/types/serverConfig'
-import { genPasswordToken, genEncodedPassword } from '@/utils/salt'
+import { logger } from '@/utils/logger'
+import { genEncodedPassword, genPasswordToken } from '@/utils/salt'
 
-export interface LoginResponse {
+interface LoginResponse {
   id: string
   name: string
   username: string
@@ -24,283 +25,99 @@ export interface ApiResponse<T = unknown> {
   data?: T
 }
 
-class NavidromeNativeApi {
-  private getServerUrl(): string {
-    return useAppStore.getState().data.url
-  }
+// Navidrome expects the whole user record back on PUT, so unknown fields are
+// carried over untouched.
+type UserRecord = UserData & Record<string, unknown>
 
-  private async getCurrentCredentials(): Promise<{ username: string; password: string }> {
-    const state = useAppStore.getState().data
-    return {
-      username: state.username,
-      password: state.password
-    }
-  }
+function encodePassword(password: string) {
+  const { authType } = useAppStore.getState().data
 
-  // (riddlah) TODO!!! Save token to store and fetch it if present.
+  return authType === AuthType.PASSWORD
+    ? genEncodedPassword(password)
+    : genPasswordToken(password)
+}
 
-  async getAuthToken(): Promise<string | null> {
+/**
+ * Changes the password of the logged in user through Navidrome's native API,
+ * since the Subsonic API has no endpoint for it. The store only keeps a hashed
+ * password, so the current one has to be supplied by the caller.
+ */
+export async function changePassword(
+  oldPassword: string,
+  newPassword: string,
+): Promise<ApiResponse<UserData>> {
+  try {
+    const { url: serverUrl, username } = useAppStore.getState().data
 
-    try {
-      const { username, password } = await this.getCurrentCredentials()
-      const serverUrl = this.getServerUrl()
-
-      if (!username || !password) {
-        throw new Error('userParams.error.userDataNotSet')
-      }
-
-      const response = await fetch(`${serverUrl}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      })
-
-      if (!response.ok) {
-        throw new Error('userParams.error.authError', response.status)
-      }
-
-      const data: LoginResponse = await response.json()
-      return data.token
-    } catch (error) {
-      console.error('userParams.error.tokenFetchError', error)
-      return null
-    }
-  }
-
-  private async makeAuthorizedRequest<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const serverUrl = this.getServerUrl()
-    const token = await this.getAuthToken()
-
-    if (!token) {
-      throw new Error('userParams.error.tokenFetchError')
+    if (!username || !oldPassword) {
+      return { success: false, message: 'userParams.error.userDataNotSet' }
     }
 
-    const response = await fetch(`${serverUrl}/api/${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-ND-Authorization': `Bearer ${token}`,
-        ...options.headers,
-      },
+    const loginResponse = await fetch(`${serverUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password: oldPassword }),
     })
 
-    if (!response.ok) {
-      throw new Error(`API Error ${response.status}`)
+    if (!loginResponse.ok) {
+      return { success: false, message: 'userParams.error.wrongOldPassword' }
     }
 
-    return response.json()
-  }
+    const { id, token } = (await loginResponse.json()) as LoginResponse
 
-  async changePassword(
-    oldPassword: string,
-    newPassword: string
-  ): Promise<ApiResponse<UserData>> {
-    try {
-      const { username } = await this.getCurrentCredentials()
-      const serverUrl = this.getServerUrl()
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-ND-Authorization': `Bearer ${token}`,
+    }
 
-      if (!username || !oldPassword) {
-        return {
-          success: false,
-          message: 'userParams.error.userDataNotSet',
-        }
-      }
+    const userResponse = await fetch(`${serverUrl}/api/user/${id}`, {
+      method: 'GET',
+      headers,
+    })
 
-      const loginResponse = await fetch(`${serverUrl}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password: oldPassword }),
-      })
+    if (!userResponse.ok) {
+      return { success: false, message: 'userParams.error.userFetchError' }
+    }
 
-      if (!loginResponse.ok) {
-        return {
-          success: false,
-          message: 'userParams.error.wrongOldPassword',
-        }
-      }
+    const user = (await userResponse.json()) as UserRecord
 
-      const loginData: LoginResponse = await loginResponse.json()
-      console.log(loginData)
-      const { id, token } = loginData
-      let currentUser = await fetch(`${serverUrl}/api/user/${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-ND-Authorization': `Bearer ${token}`,
-        }
-      })
+    const updateResponse = await fetch(`${serverUrl}/api/user/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({
+        ...user,
+        currentPassword: oldPassword,
+        password: newPassword,
+        changePassword: true,
+      }),
+    })
 
-      currentUser = await currentUser.json()
-      currentUser.currentPassword = oldPassword
-      currentUser.password = newPassword
-      currentUser.changePassword = true
-
-      const updateResponse = await fetch(`${serverUrl}/api/user/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-ND-Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(currentUser),
-      })
-
-      if (!updateResponse.ok) {
-        return {
-          success: false,
-          message: 'userParams.error.passwordChangeFailed',
-        }
-      }
-
-      const userData: UserData = await updateResponse.json()
-
-      // (riddlah): Saving password to store replacing the old
-      const state = useAppStore.getState()
-      const { authType } = state.data
-      let encodedPassword: string
-
-      if (authType === AuthType.TOKEN) {
-        encodedPassword = genPasswordToken(newPassword)
-      } else if (authType === AuthType.PASSWORD) {
-        encodedPassword = genEncodedPassword(newPassword)
-      }
-      else {
-        encodedPassword = genPasswordToken(newPassword)
-      }
-      state.actions.setPassword(encodedPassword)
-
-      return {
-        success: true,
-        message: 'userParams.error.passwordChangeSuccess',
-        data: userData,
-      }
-    } catch (error) {
-      console.error('userParams.error.passwordChangeFailed', error)
+    if (!updateResponse.ok) {
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'userParams.error.unknownError',
+        message: 'userParams.error.passwordChangeFailed',
       }
     }
-  }
 
-  async getCurrentUser(): Promise<ApiResponse<UserData>> {
-    try {
-      const token = await this.getAuthToken()
-      if (!token) {
-        return {
-          success: false,
-          message: 'userParams.error.tokenFetchError',
-        }
-      }
+    const userData = (await updateResponse.json()) as UserData
 
-      const serverUrl = this.getServerUrl()
-      const response = await fetch(`${serverUrl}/api/user/current`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-ND-Authorization': `Bearer ${token}`,
-        },
-      })
+    // Replaces the credentials the Subsonic client signs its requests with.
+    useAppStore.getState().actions.setPassword(encodePassword(newPassword))
 
-      if (!response.ok) {
-        return {
-          success: false,
-          message: 'userParams.error.userFetchError',
-        }
-      }
-
-      const data: UserData = await response.json()
-      return {
-        success: true,
-        data,
-      }
-    } catch (error) {
-      return {
-        success: false,
-        message: error instanceof Error ? error.message : 'userParams.error.unknownError',
-      }
+    return {
+      success: true,
+      message: 'userParams.error.passwordChangeSuccess',
+      data: userData,
     }
-  }
+  } catch (error) {
+    logger.error('Failed to change password', error)
 
-  async updateUser(updates: Partial<{
-    name: string
-    email: string
-    password: string
-  }>): Promise<ApiResponse<UserData>> {
-    try {
-      const token = await this.getAuthToken()
-      if (!token) {
-        return {
-          success: false,
-          message: 'userParams.error.tokenFetchError',
-        }
-      }
-
-      const currentUser = await this.getCurrentUser()
-      if (!currentUser.success || !currentUser.data) {
-        return {
-          success: false,
-          message: 'userParams.error.tokenFetchError',
-        }
-      }
-
-      const serverUrl = this.getServerUrl()
-      const response = await fetch(`${serverUrl}/api/user/${currentUser.data.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-ND-Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(updates),
-      })
-
-      if (!response.ok) {
-        return {
-          success: false,
-          message: 'userParams.error.dataUpdateFailed',
-        }
-      }
-
-      const data: UserData = await response.json()
-
-      if (updates.password) {
-        useAppStore.getState().updateData({ password: updates.password })
-      }
-
-      return {
-        success: true,
-        message: 'userParams.error.dataUpdateSuccess',
-        data,
-      }
-    } catch (error) {
-      return {
-        success: false,
-        message: error instanceof Error ? error.message : 'userParams.error.unknownError',
-      }
-    }
-  }
-
-  async checkAuth(): Promise<boolean> {
-    try {
-      const token = await this.getAuthToken()
-      if (!token) return false
-
-        const user = await this.getCurrentUser()
-        return user.success
-    } catch {
-      return false
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : 'userParams.error.unknownError',
     }
   }
 }
-
-export const navidromeNativeApi = new NavidromeNativeApi()
-
-export const changePassword = navidromeNativeApi.changePassword.bind(navidromeNativeApi)
-export const getCurrentUser = navidromeNativeApi.getCurrentUser.bind(navidromeNativeApi)
-export const updateUser = navidromeNativeApi.updateUser.bind(navidromeNativeApi)
-export const checkAuth = navidromeNativeApi.checkAuth.bind(navidromeNativeApi)

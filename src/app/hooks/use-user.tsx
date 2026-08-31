@@ -5,7 +5,7 @@ import { changePassword } from '@/api/navidromeClient'
 export function useUser() {
   const { t } = useTranslation()
 
-  async function userSetPassword(oldPassword, newPassword: string) {
+  async function userSetPassword(oldPassword: string, newPassword: string) {
     try {
       const result = await changePassword(oldPassword, newPassword)
 
@@ -16,8 +16,12 @@ export function useUser() {
       }
       return result
     } catch (error) {
-      toast.error(t('userParams.error.passwordChangeError', error))
-      return { success: false, message: error.message }
+      toast.error(t('userParams.error.passwordChangeError'))
+
+      const message =
+        error instanceof Error ? error.message : 'userParams.error.auth'
+
+      return { success: false, message }
     }
   }
 

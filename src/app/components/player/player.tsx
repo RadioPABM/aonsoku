@@ -68,7 +68,9 @@ export function Player() {
   const { isSong, isRadio, isPodcast } = usePlayerMediaType()
   const loopState = usePlayerLoop()
   const audioPlayerRef = usePlayerRef()
-  const currentPlaybackRate = usePlayerStore().playerState.currentPlaybackRate
+  const currentPlaybackRate = usePlayerStore(
+    (state) => state.playerState.currentPlaybackRate,
+  )
   const { replayGainType, replayGainPreAmp, replayGainDefaultGain } =
     useReplayGainState()
 

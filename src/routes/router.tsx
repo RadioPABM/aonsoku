@@ -38,7 +38,6 @@ const PlaylistsPage = lazy(() => import('@/app/pages/playlists/list'))
 const Playlist = lazy(() => import('@/app/pages/playlists/playlist'))
 const Radios = lazy(() => import('@/app/pages/radios/radios-list'))
 const SongList = lazy(() => import('@/app/pages/songs/songlist'))
-const LovedSongList = lazy(() => import('@/app/pages/songs/lovedsonglist'))
 const Home = lazy(() => import('@/app/pages/home'))
 const GenresList = lazy(() => import('@/app/pages/genres/list'))
 const GenrePage = lazy(() => import('@/app/pages/genres/genre'))
@@ -55,6 +54,10 @@ export const router = createHashRouter([
     path: ROUTES.LIBRARY.HOME,
     element: <BaseLayout />,
     loader: protectedLoader,
+    // Without this the server is pinged again on every search param change,
+    // which blocks filtering and every keystroke of an in-page search.
+    shouldRevalidate: ({ currentUrl, nextUrl }) =>
+      currentUrl.pathname !== nextUrl.pathname,
     children: [
       {
         id: 'home',
@@ -83,16 +86,6 @@ export const router = createHashRouter([
         element: (
           <Suspense fallback={<InfinitySongListFallback />}>
             <SongList />
-          </Suspense>
-        ),
-      },
-      {
-        id: 'lovedsongs',
-        path: ROUTES.LIBRARY.LOVEDSONGS,
-        errorElement: <ErrorPage />,
-        element: (
-          <Suspense fallback={<InfinitySongListFallback />}>
-          <LovedSongList />
           </Suspense>
         ),
       },

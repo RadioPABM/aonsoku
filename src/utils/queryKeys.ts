@@ -42,7 +42,7 @@ const search = 'search-key'
 
 const genre = {
   all: 'get-all-genres',
-  albums: 'get-genre-random-albums',
+  albums: 'get-genre-albums',
 }
 
 const update = {

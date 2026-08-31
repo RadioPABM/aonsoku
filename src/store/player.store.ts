@@ -681,7 +681,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               const { currentList } = get().songlist
               const { mediaType } = get().playerState
 
-              if (currentList.length === 0 && mediaType !== 'song') return
+              if (currentList.length === 0 || mediaType !== 'song') return
 
               const songIndex = currentList.findIndex((song) => song.id === id)
               if (songIndex === -1) return
@@ -703,7 +703,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               const { currentList, currentSongIndex } = get().songlist
               const { mediaType } = get().playerState
 
-              if (currentList.length === 0 && mediaType !== 'song') return
+              if (currentList.length === 0 || mediaType !== 'song') return
 
               const { id, starred } = get().songlist.currentSong
               const isSongStarred = typeof starred === 'string'
@@ -960,19 +960,9 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
         name: 'player_store',
         version: 1,
         merge: (persistedState, currentState) => {
-          let merged = merge(currentState, persistedState)
-
-          idbStorage.getItem<ISongList>(miniStores.songlist, (value) => {
-            if (!value) return
-
-            const newState = {
-              songlist: value,
-            }
-
-            merged = merge(merged, newState)
-          })
-
-          return merged
+          // The songlist lives in IndexedDB and can only be read
+          // asynchronously, so it is restored after the store is created.
+          return merge(currentState, persistedState)
         },
         partialize: (state) => {
           const appStore = omit(state, [
@@ -983,7 +973,7 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
             'playerState.mainDrawerState',
             'playerState.queueState',
             'playerState.lyricsState',
-            'state.settings.colors.bigPlayer.blur.settings',
+            'settings.colors.bigPlayer.blur.settings',
           ])
 
           return appStore
@@ -993,6 +983,14 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
   ),
   shallow,
 )
+
+idbStorage.getItem<ISongList>(miniStores.songlist, (value) => {
+  if (!value) return
+
+  usePlayerStore.setState((state) => {
+    state.songlist = merge(state.songlist, value)
+  })
+})
 
 usePlayerStore.subscribe(
   (state) => [state.songlist],
@@ -1062,9 +1060,13 @@ usePlayerStore.subscribe(
 )
 
 usePlayerStore.subscribe((state, prevState) => {
-  const currentSong = state.songlist.currentSong ?? null
+  // clearPlayerState() leaves currentSong as an empty object, and radio and
+  // podcast playback never scrobbles, so both have to be filtered out.
+  if (state.playerState.mediaType !== 'song') return
 
-  if (!currentSong) return
+  const currentSong = state.songlist.currentSong
+
+  if (!currentSong?.id) return
 
   const progress = state.playerProgress.progress
   const prevProgress = prevState.playerProgress.progress
