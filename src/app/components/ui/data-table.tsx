@@ -47,6 +47,30 @@ import { TABLE_ROW_SIZES, TableRow } from './data-table-row'
 
 const MemoTableRow = memo(TableRow) as typeof TableRow
 
+// Controls inside a row answer the same gesture through their own handler, so
+// the row has to keep its hands off it.
+const ROW_CONTROLS = 'a, button, input, [role="button"], [role="checkbox"]'
+const ROW_PLAY_TARGET = '[data-row-play-target]'
+
+function isRowGesture(target: EventTarget | null) {
+  const element = target as HTMLElement | null
+
+  return Boolean(element) && !element?.closest(ROW_CONTROLS)
+}
+
+/**
+ * Whether a gesture on a row should start playback. Song rows mark their cover
+ * and title as the play target, which leaves the heart, the duration and the
+ * space beside them inert; rows that mark nothing keep playing from anywhere.
+ */
+function isPlayGesture(target: EventTarget | null, row: HTMLElement) {
+  if (!isRowGesture(target)) return false
+
+  if (!row.querySelector(ROW_PLAY_TARGET)) return true
+
+  return Boolean((target as HTMLElement).closest(ROW_PLAY_TARGET))
+}
+
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
     handlePlaySong: ((row: Row<TData>) => void) | undefined
@@ -345,6 +369,8 @@ export function DataTable<TData, TValue>({
 
   const handleRowDbClick = useCallback(
     (e: MouseEvent<HTMLDivElement>, row: Row<TData>) => {
+      if (!isRowGesture(e.target)) return
+
       if (handlePlaySong) {
         e.stopPropagation()
         handlePlaySong(row)
@@ -356,6 +382,7 @@ export function DataTable<TData, TValue>({
   const handleRowTap = useCallback(
     (e: TouchEvent<HTMLDivElement>, row: Row<TData>) => {
       if (!endTap()) return
+      if (!isRowGesture(e.target)) return
 
       // A tap is the touch equivalent of a single click, so it opens the row's
       // page when it has one. Playing stays on the double click and on the
@@ -366,7 +393,7 @@ export function DataTable<TData, TValue>({
         return
       }
 
-      if (handlePlaySong) {
+      if (handlePlaySong && isPlayGesture(e.target, e.currentTarget)) {
         e.stopPropagation()
         handlePlaySong(row)
       }

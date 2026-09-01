@@ -8,7 +8,9 @@ import { ISong } from '@/types/responses/song'
 
 export function TableSongTitle({ song }: { song: ISong }) {
   return (
-    <div className="flex w-full gap-2 items-center">
+    // Marks the cover and the title as the part of the row that starts
+    // playback on a tap; see isPlayGesture in the data table.
+    <div data-row-play-target className="flex w-full gap-2 items-center">
       <CoverImage
         coverArt={song.coverArt}
         coverArtType="song"
