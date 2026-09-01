@@ -14,15 +14,19 @@ export function SongTableActions({ row }: SongTableActionsProps) {
 
   return (
     <div className="flex gap-1 items-center">
-      <TableActionButton
-        optionsMenuItems={
-          <SongMenuOptions
-            variant="dropdown"
-            song={row.original}
-            index={row.index}
-          />
-        }
-      />
+      {/* Desktop only: a long press opens the same menu on touch, and the
+          row has better uses for the width. */}
+      <div className="hidden md:block">
+        <TableActionButton
+          optionsMenuItems={
+            <SongMenuOptions
+              variant="dropdown"
+              song={row.original}
+              index={row.index}
+            />
+          }
+        />
+      </div>
       {!hideFavoritesSection && (
         <TableLikeButton
           type="song"

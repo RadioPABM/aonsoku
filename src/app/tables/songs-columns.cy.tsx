@@ -40,11 +40,11 @@ describe('Song rows', () => {
   it('gives the title the width the duration column used to take', () => {
     mountList(390)
 
-    // The menu is reachable without a long press again.
+    // The row menu stays on the desktop layout; a long press reaches it here.
     cy.get(ROW)
       .first()
       .find('button:has(svg.lucide-ellipsis-vertical)')
-      .should('be.visible')
+      .should('not.be.visible')
 
     // The length is not lost, it moves under the title.
     cy.get<ISong>('@firstSong').then((song) => {
@@ -56,8 +56,8 @@ describe('Song rows', () => {
       .find('[data-row-play-target]')
       .then(($title) => {
         // Wider than the row minus the chrome it still carries: 48px for the
-        // number and 88px for the two buttons, with nothing for the duration.
-        expect($title[0].getBoundingClientRect().width).to.be.greaterThan(230)
+        // number and 56px for the like button, with nothing for the duration.
+        expect($title[0].getBoundingClientRect().width).to.be.greaterThan(260)
       })
   })
 

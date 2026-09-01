@@ -252,7 +252,7 @@ export function songsColumns(): ColumnDefType<ISong>[] {
         maxWidth: 120,
         justifyContent: 'end',
       },
-      className: '!w-[88px] !max-w-[88px] md:!w-[120px] md:!max-w-[120px]',
+      className: '!w-14 !max-w-14 md:!w-[120px] md:!max-w-[120px]',
       header: () => {
         const hideFavoritesSection = useAppStore().pages.hideFavoritesSection
         if (hideFavoritesSection) return null
