@@ -13,6 +13,7 @@ import {
   RpcPayload,
   setDiscordRpcActivity,
 } from './discordRpc'
+import { updateDockMenu } from './dockMenu'
 import { playerState } from './playerState'
 import { getAppSetting, ISettingPayload, saveAppSettings } from './settings'
 import { setTaskbarButtons } from './taskbar'
@@ -28,6 +29,7 @@ export function setupEvents(window: BrowserWindow | null) {
   window.on('show', () => {
     setTaskbarButtons()
     updateTray()
+    updateDockMenu()
   })
 
   window.on('hide', () => {
@@ -161,6 +163,7 @@ export function setupIpcEvents(window: BrowserWindow | null) {
       setTimeout(() => {
         setTaskbarButtons()
         updateTray()
+        updateDockMenu()
       }, 150)
     },
   )

@@ -170,12 +170,14 @@ export function getSongStreamUrl(
   id: string,
   maxBitRate?: string,
   format?: string,
+  cacheBustToken?: string,
 ) {
   return getUrl('stream', {
     id,
     maxBitRate,
     format,
     estimateContentLength: 'true',
+    ...(cacheBustToken ? { _cb: cacheBustToken } : {}),
   })
 }
 

@@ -1062,6 +1062,15 @@ usePlayerStore.subscribe(
   },
 )
 
+usePlayerStore.subscribe(
+  (state) => state.playerProgress.progress,
+  (progress, prevProgress) => {
+    if (Math.abs(progress - prevProgress) > 0.02) {
+      discordRpc.sendCurrentSong()
+    }
+  },
+)
+
 usePlayerStore.subscribe((state, prevState) => {
   // clearPlayerState() leaves currentSong as an empty object, and radio and
   // podcast playback never scrobbles, so both have to be filtered out.

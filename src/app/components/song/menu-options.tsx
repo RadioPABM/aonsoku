@@ -1,6 +1,8 @@
 import { OptionsButtons } from '@/app/components/options/buttons'
+import { DownloadOptionHandler } from '@/app/components/options/download-handler'
 import { ContextMenuSeparator } from '@/app/components/ui/context-menu'
 import { useOptions } from '@/app/hooks/use-options'
+import { useAppStore } from '@/store/app.store'
 import { ISong } from '@/types/responses/song'
 import { AddToPlaylistSubMenu } from './add-to-playlist'
 
@@ -21,10 +23,12 @@ export function SongMenuOptions({
     createNewPlaylist,
     addToPlaylist,
     removeSongFromPlaylist,
+    startDownload,
     openSongInfo,
     isOnPlaylistPage,
     createShare,
   } = useOptions()
+  const hidePlaylistsSection = useAppStore().pages.hidePlaylistsSection
   const songIndexes = [index.toString()]
 
   return (
@@ -48,17 +52,21 @@ export function SongMenuOptions({
         variant={variant}
         onClick={(e) => {
           e.stopPropagation()
-          createShare(song.id)}
-        } />
-      <ContextMenuSeparator />
-
-      <OptionsButtons.AddToPlaylistOption variant={variant}>
-        <AddToPlaylistSubMenu
-          type={variant}
-          newPlaylistFn={() => createNewPlaylist(song.title, song.id)}
-          addToPlaylistFn={(id) => addToPlaylist(id, song.id)}
-        />
-      </OptionsButtons.AddToPlaylistOption>
+          createShare(song.id)
+        }}
+      />
+      {!hidePlaylistsSection && (
+        <>
+          <ContextMenuSeparator />
+          <OptionsButtons.AddToPlaylistOption variant={variant}>
+            <AddToPlaylistSubMenu
+              type={variant}
+              newPlaylistFn={() => createNewPlaylist(song.title, song.id)}
+              addToPlaylistFn={(id) => addToPlaylist(id, song.id)}
+            />
+          </OptionsButtons.AddToPlaylistOption>
+        </>
+      )}
       {isOnPlaylistPage && (
         <OptionsButtons.RemoveFromPlaylist
           variant={variant}
@@ -68,6 +76,15 @@ export function SongMenuOptions({
           }}
         />
       )}
+      <DownloadOptionHandler context={true}>
+        <OptionsButtons.Download
+          variant={variant}
+          onClick={(e) => {
+            e.stopPropagation()
+            startDownload(song.id)
+          }}
+        />
+      </DownloadOptionHandler>
       <ContextMenuSeparator />
       <OptionsButtons.SongInfo
         variant={variant}

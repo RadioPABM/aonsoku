@@ -1,4 +1,5 @@
 import {
+  Heart,
   HomeIcon,
   LibraryIcon,
   ListMusicIcon,
@@ -6,7 +7,6 @@ import {
   Music2Icon,
   PodcastIcon,
   RadioIcon,
-  Heart,
   TagsIcon,
 } from 'lucide-react'
 import { ElementType, memo } from 'react'

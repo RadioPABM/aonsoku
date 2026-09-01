@@ -1,4 +1,5 @@
 import { OptionsButtons } from '@/app/components/options/buttons'
+import { DownloadOptionHandler } from '@/app/components/options/download-handler'
 import { DropdownMenuSeparator } from '@/app/components/ui/dropdown-menu'
 import { useOptions } from '@/app/hooks/use-options'
 import { subsonic } from '@/service/subsonic'
@@ -16,6 +17,7 @@ interface PlaylistOptionsProps {
   showPlay?: boolean
   disablePlayNext?: boolean
   disableAddLast?: boolean
+  disableDownload?: boolean
   disableEdit?: boolean
   disableDelete?: boolean
 }
@@ -26,11 +28,12 @@ export function PlaylistOptions({
   showPlay = false,
   disablePlayNext = false,
   disableAddLast = false,
+  disableDownload = false,
   disableEdit = false,
   disableDelete = false,
 }: PlaylistOptionsProps) {
   const { setPlaylistDialogState, setData } = usePlaylists()
-  const { play, playNext, playLast, createShare } = useOptions()
+  const { play, playNext, playLast, startDownload, createShare } = useOptions()
   const { setPlaylistId, setConfirmDialogState } = useRemovePlaylist()
   const { isPlaylistActive, isPlaylistPlaying } = useIsPlaylistPlaying(
     playlist.id,
@@ -92,7 +95,11 @@ export function PlaylistOptions({
     }
   }
 
-  async function handleShare() {
+  function handleDownload() {
+    startDownload(playlist.id)
+  }
+
+  function handleShare() {
     createShare(playlist.id)
   }
 
@@ -133,17 +140,25 @@ export function PlaylistOptions({
           handlePlayLast()
         }}
       />
+      <DownloadOptionHandler group={false}>
+        <OptionsButtons.Download
+          variant={variant}
+          disabled={disableDownload}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleDownload()
+          }}
+        />
+      </DownloadOptionHandler>
       <DropdownMenuSeparator />
-
       <OptionsButtons.Share
         variant={variant}
         onClick={(e) => {
           e.stopPropagation()
           handleShare()
-          }
-        }
+        }}
       />
-
+      <DropdownMenuSeparator />
       <OptionsButtons.EditPlaylist
         variant={variant}
         onClick={(e) => {

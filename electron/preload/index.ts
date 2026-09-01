@@ -99,6 +99,9 @@ if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
+    contextBridge.exposeInMainWorld('envVars', {
+      XDG_CURRENT_DESKTOP: process.env.XDG_CURRENT_DESKTOP,
+    })
   } catch (error) {
     console.error(error)
   }
@@ -107,4 +110,8 @@ if (process.contextIsolated) {
   window.electron = electronAPI
   // @ts-expect-error (define in dts)
   window.api = api
+  // @ts-expect-error (define in dts)
+  window.envVars = {
+    XDG_CURRENT_DESKTOP: process.env.XDG_CURRENT_DESKTOP,
+  }
 }

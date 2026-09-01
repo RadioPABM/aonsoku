@@ -1,6 +1,7 @@
 import omit from 'lodash/omit'
 import {
   CheckIcon,
+  CornerDownRight,
   DownloadIcon,
   Info,
   ListEnd,
@@ -10,7 +11,6 @@ import {
   PlusIcon,
   PodcastIcon,
   Trash,
-  CornerDownRight
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { ContextMenuItem } from '@/app/components/ui/context-menu'
@@ -68,10 +68,10 @@ function Share({ variant = 'dropdown', ...props }: DropdownMenuItemProps) {
 
   return (
     <MenuItemFactory
-    variant={variant}
-    icon={<CornerDownRight className="mr-2 h-4 w-4" />}
-    label={t('options.share')}
-    {...props}
+      variant={variant}
+      icon={<CornerDownRight className="mr-2 h-4 w-4" />}
+      label={t('options.share')}
+      {...props}
     />
   )
 }

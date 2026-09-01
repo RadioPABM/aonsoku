@@ -1,7 +1,6 @@
 import { OptionsButtons } from '@/app/components/options/buttons'
-import {
-  DropdownMenuGroup,
-} from '@/app/components/ui/dropdown-menu'
+import { DownloadOptionHandler } from '@/app/components/options/download-handler'
+import { DropdownMenuGroup } from '@/app/components/ui/dropdown-menu'
 import { useOptions } from '@/app/hooks/use-options'
 import { useSongList } from '@/app/hooks/use-song-list'
 import { IArtist } from '@/types/responses/artist'
@@ -13,7 +12,7 @@ interface ArtistOptionsProps {
 
 export function ArtistOptions({ artist }: ArtistOptionsProps) {
   const { getArtistAllSongs } = useSongList()
-  const { playLast, playNext, createShare } = useOptions()
+  const { playLast, playNext, startDownload, createShare } = useOptions()
 
   async function getSongsToQueue(callback: (songs: ISong[]) => void) {
     const songs = await getArtistAllSongs(artist.name)
@@ -30,6 +29,10 @@ export function ArtistOptions({ artist }: ArtistOptionsProps) {
     await getSongsToQueue(playLast)
   }
 
+  function handleDownload() {
+    startDownload(artist.id)
+  }
+
   function handleShare() {
     createShare(artist.id)
   }
@@ -40,7 +43,10 @@ export function ArtistOptions({ artist }: ArtistOptionsProps) {
         <OptionsButtons.PlayNext onClick={handlePlayNext} />
         <OptionsButtons.PlayLast onClick={handlePlayLast} />
         <OptionsButtons.Share onClick={handleShare} />
-        </DropdownMenuGroup>
+        <DownloadOptionHandler group={false}>
+          <OptionsButtons.Download onClick={handleDownload} />
+        </DownloadOptionHandler>
+      </DropdownMenuGroup>
     </>
   )
 }

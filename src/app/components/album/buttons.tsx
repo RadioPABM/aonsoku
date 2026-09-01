@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Actions } from '@/app/components/actions'
 import { subsonic } from '@/service/subsonic'
-import { useAppPages } from '@/store/app.store'
+import { useAppPages, useAppStore } from '@/store/app.store'
 import {
   useIsAlbumPlaying,
   usePlayerActions,
@@ -26,6 +26,7 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
   const isShuffleActive = usePlayerStore(
     (state) => state.playerState.isShuffleActive,
   )
+  const hideFavoritesSection = useAppStore().pages.hideFavoritesSection
   const isAlbumStarred = album.starred !== undefined
 
   const queryClient = useQueryClient()
@@ -84,15 +85,15 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
 
   return (
     <Actions.Container>
-    {album.song.length > 1 && (
-      <Actions.Button
-        tooltip={buttonsTooltips.play}
-        buttonStyle="primary"
-        onClick={handlePlayButton}
-      >
-        {isAlbumPlaying ? <Actions.PauseIcon /> : <Actions.PlayIcon />}
-      </Actions.Button>
-    )}
+      {album.song.length > 1 && (
+        <Actions.Button
+          tooltip={buttonsTooltips.play}
+          buttonStyle="primary"
+          onClick={handlePlayButton}
+        >
+          {isAlbumPlaying ? <Actions.PauseIcon /> : <Actions.PlayIcon />}
+        </Actions.Button>
+      )}
 
       {album.song.length > 1 && (
         <Actions.Button
@@ -104,9 +105,16 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
         </Actions.Button>
       )}
 
-      <Actions.Button tooltip={buttonsTooltips.like} onClick={handleLikeButton}>
-        <Actions.LikeIcon isStarred={isAlbumStarred} />
-      </Actions.Button>
+      {!hideFavoritesSection && (
+        <>
+          <Actions.Button
+            tooltip={buttonsTooltips.like}
+            onClick={handleLikeButton}
+          >
+            <Actions.LikeIcon isStarred={isAlbumStarred} />
+          </Actions.Button>
+        </>
+      )}
 
       {showInfoButton && (
         <Actions.Button
@@ -124,4 +132,3 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
     </Actions.Container>
   )
 }
-

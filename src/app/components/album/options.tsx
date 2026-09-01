@@ -1,10 +1,12 @@
 import { OptionsButtons } from '@/app/components/options/buttons'
+import { DownloadOptionHandler } from '@/app/components/options/download-handler'
 import { AddToPlaylistSubMenu } from '@/app/components/song/add-to-playlist'
 import {
   DropdownMenuGroup,
   DropdownMenuSeparator,
 } from '@/app/components/ui/dropdown-menu'
 import { useOptions } from '@/app/hooks/use-options'
+import { useAppStore } from '@/store/app.store'
 import { SingleAlbum } from '@/types/responses/album'
 
 interface AlbumOptionsProps {
@@ -12,9 +14,11 @@ interface AlbumOptionsProps {
 }
 
 export function AlbumOptions({ album }: AlbumOptionsProps) {
+  const hidePlaylistsSection = useAppStore().pages.hidePlaylistsSection
   const {
     playNext,
     playLast,
+    startDownload,
     addToPlaylist,
     createShare,
     createNewPlaylist,
@@ -26,6 +30,10 @@ export function AlbumOptions({ album }: AlbumOptionsProps) {
 
   function handlePlayLast() {
     playLast(album.song)
+  }
+
+  function handleDownload() {
+    startDownload(album.id)
   }
 
   function handleShare() {
@@ -51,14 +59,21 @@ export function AlbumOptions({ album }: AlbumOptionsProps) {
         <OptionsButtons.PlayLast onClick={handlePlayLast} />
         <OptionsButtons.Share onClick={handleShare} />
       </DropdownMenuGroup>
-      <DropdownMenuSeparator />
-      <OptionsButtons.AddToPlaylistOption variant="dropdown">
-        <AddToPlaylistSubMenu
-          type="dropdown"
-          newPlaylistFn={handleCreateNewPlaylist}
-          addToPlaylistFn={handleAddToPlaylist}
-        />
-      </OptionsButtons.AddToPlaylistOption>
+      {!hidePlaylistsSection && (
+        <>
+          <DropdownMenuSeparator />
+          <OptionsButtons.AddToPlaylistOption variant="dropdown">
+            <AddToPlaylistSubMenu
+              type="dropdown"
+              newPlaylistFn={handleCreateNewPlaylist}
+              addToPlaylistFn={handleAddToPlaylist}
+            />
+          </OptionsButtons.AddToPlaylistOption>
+        </>
+      )}
+      <DownloadOptionHandler>
+        <OptionsButtons.Download onClick={handleDownload} />
+      </DownloadOptionHandler>
     </>
   )
 }

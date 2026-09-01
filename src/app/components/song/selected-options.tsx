@@ -1,11 +1,13 @@
 import { Table } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'
 import { OptionsButtons } from '@/app/components/options/buttons'
+import { DownloadOptionHandler } from '@/app/components/options/download-handler'
 import {
   ContextMenuItem,
   ContextMenuSeparator,
 } from '@/app/components/ui/context-menu'
 import { useOptions } from '@/app/hooks/use-options'
+import { useAppStore } from '@/store/app.store'
 import { ISong } from '@/types/responses/song'
 import { AddToPlaylistSubMenu } from './add-to-playlist'
 
@@ -16,6 +18,7 @@ interface SelectedSongsProps {
 export function SelectedSongsMenuOptions({ table }: SelectedSongsProps) {
   const { t } = useTranslation()
   const songOptions = useOptions()
+  const hidePlaylistsSection = useAppStore().pages.hidePlaylistsSection
 
   const { rows } = table.getFilteredSelectedRowModel()
   const isSingleSelected = rows.length === 1
@@ -33,6 +36,18 @@ export function SelectedSongsMenuOptions({ table }: SelectedSongsProps) {
 
   async function handlePlayLast() {
     reset(() => songOptions.playLast(songs))
+  }
+
+  async function handleDownload() {
+    if (!isSingleSelected) return
+
+    reset(() => songOptions.startDownload(firstSong.id))
+  }
+
+  function handleShareOption() {
+    if (!isSingleSelected) return
+
+    reset(() => songOptions.createShare(firstSong.id))
   }
 
   async function handleAddToPlaylist(id: string) {
@@ -59,12 +74,6 @@ export function SelectedSongsMenuOptions({ table }: SelectedSongsProps) {
     reset(() => songOptions.openSongInfo(firstSong.id))
   }
 
-  function handleShareOption() {
-    if (!isSingleSelected) return
-
-      reset(() => songOptions.createShare(firstSong.id))
-  }
-
   return (
     <>
       <OptionsButtons.PlayNext
@@ -86,16 +95,21 @@ export function SelectedSongsMenuOptions({ table }: SelectedSongsProps) {
         variant="context"
         onClick={(e) => {
           e.stopPropagation()
-          handleShareOption()}
-        } />
-      <ContextMenuSeparator />
-      <OptionsButtons.AddToPlaylistOption variant="context">
-        <AddToPlaylistSubMenu
-          type="context"
-          newPlaylistFn={handleCreateNewPlaylist}
-          addToPlaylistFn={handleAddToPlaylist}
-        />
-      </OptionsButtons.AddToPlaylistOption>
+          handleShareOption()
+        }}
+      />
+      {!hidePlaylistsSection && (
+        <>
+          <ContextMenuSeparator />
+          <OptionsButtons.AddToPlaylistOption variant="context">
+            <AddToPlaylistSubMenu
+              type="context"
+              newPlaylistFn={handleCreateNewPlaylist}
+              addToPlaylistFn={handleAddToPlaylist}
+            />
+          </OptionsButtons.AddToPlaylistOption>
+        </>
+      )}
       {songOptions.isOnPlaylistPage && (
         <OptionsButtons.RemoveFromPlaylist
           variant="context"
@@ -107,6 +121,15 @@ export function SelectedSongsMenuOptions({ table }: SelectedSongsProps) {
       )}
       {isSingleSelected && (
         <>
+          <DownloadOptionHandler context={true}>
+            <OptionsButtons.Download
+              variant="context"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDownload()
+              }}
+            />
+          </DownloadOptionHandler>
           <ContextMenuSeparator />
           <OptionsButtons.SongInfo
             variant="context"
