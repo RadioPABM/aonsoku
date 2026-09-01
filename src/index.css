@@ -192,6 +192,30 @@ img {
   @apply after:content-['•'] after:block after:absolute after:-bottom-1.5 after:text-secondary-foreground !text-secondary-foreground;
 }
 
+/*
+ * A menu marked as a mobile sheet is pinned to the bottom of the screen. The
+ * wrapper Radix positions has to be reset here rather than from the content:
+ * its transform makes it the containing block, so nothing inside it can pin
+ * itself to the viewport.
+ */
+[data-radix-popper-content-wrapper]:has(> [data-mobile-sheet]) {
+  position: fixed !important;
+  inset: auto 0 0 0 !important;
+  width: 100vw !important;
+  min-width: 0 !important;
+  transform: none !important;
+  z-index: 50;
+}
+
+/* A sheet is reached with a thumb, so its rows are sized for one. */
+[data-mobile-sheet] [role="menuitem"],
+[data-mobile-sheet] [role="menuitemcheckbox"],
+[data-mobile-sheet] [role="menuitemradio"] {
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+  font-size: 0.9375rem;
+}
+
 .bg-skeleton {
   @apply bg-accent;
 }
