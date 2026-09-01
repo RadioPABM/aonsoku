@@ -1,20 +1,95 @@
+import { Capacitor } from '@capacitor/core'
+import { MediaSession } from '@capgo/capacitor-media-session'
 import { getSimpleCoverArtUrl } from '@/api/httpClient'
 import { usePlayerStore } from '@/store/player.store'
 import { EpisodeWithPodcast } from '@/types/responses/podcasts'
 import { ISong } from '@/types/responses/song'
+import { logger } from '@/utils/logger'
 
 const artworkSizes = ['96', '128', '192', '256', '384', '512']
 
-function removeMediaSession() {
-  if (!navigator.mediaSession) return
+// On Android the WebView has no media session of its own, so the same calls
+// are mirrored to the native plugin, which owns the playback notification.
+const isNative = Capacitor.isNativePlatform()
 
-  navigator.mediaSession.metadata = null
+type Metadata = {
+  title: string
+  artist: string
+  album: string
+  artwork: MediaImage[]
+}
+
+type MediaSessionActionName =
+  | 'play'
+  | 'pause'
+  | 'stop'
+  | 'previoustrack'
+  | 'nexttrack'
+  | 'seekbackward'
+  | 'seekforward'
+  | 'seekto'
+
+type ActionCallback = (details: { seekTime?: number | null }) => void
+
+function reportNativeError(action: string) {
+  return (error: unknown) => {
+    logger.error('[mediaSession] - Native call failed', { action, error })
+  }
+}
+
+function applyMetadata(metadata: Metadata | null) {
+  if (navigator.mediaSession) {
+    navigator.mediaSession.metadata = metadata
+      ? new MediaMetadata(metadata)
+      : null
+  }
+
+  if (!isNative) return
+
+  MediaSession.setMetadata(
+    metadata ?? { title: '', artist: '', album: '', artwork: [] },
+  ).catch(reportNativeError('setMetadata'))
+}
+
+function applyActionHandler(
+  action: MediaSessionActionName,
+  handler: ActionCallback | null,
+) {
+  if (navigator.mediaSession) {
+    navigator.mediaSession.setActionHandler(action, handler)
+  }
+
+  if (!isNative) return
+
+  MediaSession.setActionHandler({ action }, handler).catch(
+    reportNativeError(`setActionHandler:${action}`),
+  )
+}
+
+function getAudioElement() {
+  return usePlayerStore.getState().playerState.audioPlayerRef
+}
+
+function seekBy(amount: number) {
+  const audio = getAudioElement()
+  if (!audio) return
+
+  audio.currentTime += amount
+}
+
+function seekTo(time?: number | null) {
+  const audio = getAudioElement()
+  if (!audio || typeof time !== 'number') return
+
+  audio.currentTime = time
+}
+
+function removeMediaSession() {
+  applyMetadata(null)
 }
 
 function setMediaSession(song: ISong) {
-  if (!navigator.mediaSession) return
-
-  navigator.mediaSession.metadata = new MediaMetadata({
+  applyMetadata({
     title: song.title,
     artist: song.artist,
     album: song.album,
@@ -29,9 +104,7 @@ function setMediaSession(song: ISong) {
 }
 
 function setPodcastMediaSession(episode: EpisodeWithPodcast) {
-  if (!navigator.mediaSession) return
-
-  navigator.mediaSession.metadata = new MediaMetadata({
+  applyMetadata({
     title: episode.title,
     album: episode.podcast.title,
     artist: episode.podcast.author,
@@ -45,68 +118,101 @@ function setPodcastMediaSession(episode: EpisodeWithPodcast) {
   })
 }
 
-async function setRadioMediaSession(label: string, radioName: string) {
-  if (!navigator.mediaSession) return
-
-  navigator.mediaSession.metadata = new MediaMetadata({
+function setRadioMediaSession(label: string, radioName: string) {
+  applyMetadata({
     title: radioName,
     artist: label,
     album: '',
-    artwork: [
-      {
-        src: '',
-        sizes: '',
-        type: '',
-      },
-    ],
+    artwork: [],
   })
 }
 
 function setPlaybackState(state: boolean | null) {
-  if (!navigator.mediaSession) return
+  const playbackState = state === null ? 'none' : state ? 'playing' : 'paused'
 
-  if (state === null) navigator.mediaSession.playbackState = 'none'
-
-  if (state) {
-    navigator.mediaSession.playbackState = 'playing'
-  } else {
-    navigator.mediaSession.playbackState = 'paused'
+  if (navigator.mediaSession) {
+    navigator.mediaSession.playbackState = playbackState
   }
+
+  if (!isNative) return
+
+  MediaSession.setPlaybackState({ playbackState }).catch(
+    reportNativeError('setPlaybackState'),
+  )
+}
+
+interface PositionState {
+  duration: number
+  position: number
+  playbackRate: number
+}
+
+/**
+ * Feeds the scrubber the system controls draw. A position past the duration
+ * throws in the browser implementation, so both values are sanitized here.
+ */
+function setPositionState({ duration, position, playbackRate }: PositionState) {
+  if (!Number.isFinite(duration) || duration <= 0) return
+
+  const safePosition = Math.min(Math.max(position, 0), duration)
+  const safeRate = playbackRate > 0 ? playbackRate : 1
+
+  if (navigator.mediaSession?.setPositionState) {
+    try {
+      navigator.mediaSession.setPositionState({
+        duration,
+        position: safePosition,
+        playbackRate: safeRate,
+      })
+    } catch (error) {
+      logger.error('[mediaSession] - Invalid position state', { error })
+    }
+  }
+
+  if (!isNative) return
+
+  MediaSession.setPositionState({
+    duration,
+    position: safePosition,
+    playbackRate: safeRate,
+  }).catch(reportNativeError('setPositionState'))
 }
 
 function setHandlers() {
-  const { mediaSession } = navigator
-  if (!mediaSession) return
+  const { togglePlayPause, playNextSong, playPrevSong } =
+    usePlayerStore.getState().actions
 
-  const state = usePlayerStore.getState()
-  const { togglePlayPause, playNextSong, playPrevSong } = state.actions
-
-  mediaSession.setActionHandler('seekbackward', null)
-  mediaSession.setActionHandler('seekforward', null)
-
-  mediaSession.setActionHandler('play', () => togglePlayPause())
-  mediaSession.setActionHandler('pause', () => togglePlayPause())
-  mediaSession.setActionHandler('previoustrack', () => playPrevSong())
-  mediaSession.setActionHandler('nexttrack', () => playNextSong())
+  applyActionHandler('seekbackward', () => seekBy(-15))
+  applyActionHandler('seekforward', () => seekBy(30))
+  applyActionHandler('seekto', ({ seekTime }) => seekTo(seekTime))
+  applyActionHandler('play', () => togglePlayPause())
+  applyActionHandler('pause', () => togglePlayPause())
+  applyActionHandler('previoustrack', () => playPrevSong())
+  applyActionHandler('nexttrack', () => playNextSong())
 }
 
-interface SetPodcastHandlerParams {
-  handleSeekAction: (value: number) => void
+function setRadioHandlers() {
+  const { togglePlayPause } = usePlayerStore.getState().actions
+
+  applyActionHandler('seekbackward', null)
+  applyActionHandler('seekforward', null)
+  applyActionHandler('seekto', null)
+  applyActionHandler('previoustrack', null)
+  applyActionHandler('nexttrack', null)
+  applyActionHandler('play', () => togglePlayPause())
+  applyActionHandler('pause', () => togglePlayPause())
 }
 
-function setPodcastHandlers({ handleSeekAction }: SetPodcastHandlerParams) {
-  const { mediaSession } = navigator
-  if (!mediaSession) return
-
+function setPodcastHandlers() {
   const { setPlayingState } = usePlayerStore.getState().actions
 
-  mediaSession.setActionHandler('previoustrack', null)
-  mediaSession.setActionHandler('nexttrack', null)
-
-  mediaSession.setActionHandler('play', () => setPlayingState(true))
-  mediaSession.setActionHandler('pause', () => setPlayingState(false))
-  mediaSession.setActionHandler('seekbackward', () => handleSeekAction(-15))
-  mediaSession.setActionHandler('seekforward', () => handleSeekAction(30))
+  applyActionHandler('previoustrack', null)
+  applyActionHandler('nexttrack', null)
+  applyActionHandler('play', () => setPlayingState(true))
+  applyActionHandler('pause', () => setPlayingState(false))
+  applyActionHandler('seekbackward', () => seekBy(-15))
+  applyActionHandler('seekforward', () => seekBy(30))
+  applyActionHandler('seekto', ({ seekTime }) => seekTo(seekTime))
 }
 
 export const manageMediaSession = {
@@ -115,6 +221,8 @@ export const manageMediaSession = {
   setRadioMediaSession,
   setPodcastMediaSession,
   setPlaybackState,
+  setPositionState,
   setHandlers,
+  setRadioHandlers,
   setPodcastHandlers,
 }

@@ -4,9 +4,12 @@ import {
   usePlayerIsPlaying,
   usePlayerMediaType,
   usePlayerSonglist,
+  usePlayerStore,
 } from '@/store/player.store'
 import { appName } from '@/utils/appName'
 import { manageMediaSession } from '@/utils/setMediaSession'
+
+const POSITION_UPDATE_INTERVAL = 1000
 
 export function MediaSessionObserver() {
   const { t } = useTranslation()
@@ -29,14 +32,28 @@ export function MediaSessionObserver() {
     document.title = appName
   }, [])
 
+  // The handlers are registered here rather than in the player controls: the
+  // desktop control bar is not mounted on phones, where the system controls
+  // matter most.
+  useEffect(() => {
+    if (isPodcast) {
+      manageMediaSession.setPodcastHandlers()
+      return
+    }
+
+    if (isRadio) {
+      manageMediaSession.setRadioHandlers()
+      return
+    }
+
+    manageMediaSession.setHandlers()
+  }, [isPodcast, isRadio])
+
   useEffect(() => {
     manageMediaSession.setPlaybackState(isPlaying)
 
     if (hasNothingPlaying) {
       manageMediaSession.removeMediaSession()
-    }
-
-    if (hasNothingPlaying || !isPlaying) {
       resetAppTitle()
       return
     }
@@ -56,7 +73,7 @@ export function MediaSessionObserver() {
       manageMediaSession.setPodcastMediaSession(episode)
     }
 
-    document.title = title
+    document.title = isPlaying ? title : appName
   }, [
     episode,
     hasNothingPlaying,
@@ -69,6 +86,29 @@ export function MediaSessionObserver() {
     song,
     resetAppTitle,
   ])
+
+  // The system scrubber only needs a coarse position, so the store is read on
+  // an interval instead of on every timeupdate.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a track change has to push the new position right away
+  useEffect(() => {
+    function pushPosition() {
+      const { playerState, playerProgress } = usePlayerStore.getState()
+
+      manageMediaSession.setPositionState({
+        duration: playerState.currentDuration,
+        position: playerProgress.progress,
+        playbackRate: playerState.currentPlaybackRate,
+      })
+    }
+
+    pushPosition()
+
+    if (!isPlaying) return
+
+    const interval = setInterval(pushPosition, POSITION_UPDATE_INTERVAL)
+
+    return () => clearInterval(interval)
+  }, [isPlaying, song, radio, episode])
 
   return null
 }

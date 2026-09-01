@@ -9,12 +9,7 @@ import {
   SkipBack,
   SkipForward,
 } from 'lucide-react'
-import {
-  ComponentPropsWithoutRef,
-  RefObject,
-  useCallback,
-  useEffect,
-} from 'react'
+import { ComponentPropsWithoutRef, RefObject, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import RepeatOne from '@/app/components/icons/repeat-one'
 import { Button } from '@/app/components/ui/button'
@@ -33,7 +28,6 @@ import { LoopState } from '@/types/playerContext'
 import { EpisodeWithPodcast } from '@/types/responses/podcasts'
 import { Radio } from '@/types/responses/radios'
 import { ISong } from '@/types/responses/song'
-import { manageMediaSession } from '@/utils/setMediaSession'
 
 interface PlayerControlsProps {
   song: ISong
@@ -79,15 +73,6 @@ export function PlayerControls({
     },
     [audioRef],
   )
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: isPlaying needed to trigger
-  useEffect(() => {
-    if (isPodcast) {
-      manageMediaSession.setPodcastHandlers({ handleSeekAction })
-    } else {
-      manageMediaSession.setHandlers()
-    }
-  }, [handleSeekAction, isPodcast, isPlaying])
 
   const shuffleTooltip = isShuffleActive
     ? t('player.tooltips.shuffle.disable')
