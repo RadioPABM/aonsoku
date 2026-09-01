@@ -29,12 +29,28 @@ on:
 
 jobs:
   release:
+    name: ${{ matrix.target }}
     permissions:
       contents: write
     strategy:
+      # Every target stands on its own: a broken Windows build must not take
+      # the APK or the AppImage down with it.
+      fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-2022]
+        include:
+          - target: mac
+            os: macos-latest
+          - target: linux
+            os: ubuntu-latest
+          - target: win
+            os: windows-2022
+          - target: android
+            os: ubuntu-latest
     runs-on: ${{ matrix.os }}
+    env:
+      # A signed release build is only possible when the keystore secret exists,
+      # otherwise the job falls back to a debug APK, which is still installable.
+      HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
     steps:
       - name: Check execution logic
         id: check
@@ -45,13 +61,14 @@ jobs:
           if [[ "${{ github.event_name }}" == "push" ]]; then
             SHOULD_RUN="true"
           else
-            if [[ "${{ matrix.os }}" == "macos-latest" && "${{ inputs.run_mac }}" == "true" ]]; then SHOULD_RUN="true"; fi
-            if [[ "${{ matrix.os }}" == "ubuntu-latest" && "${{ inputs.run_linux }}" == "true" ]]; then SHOULD_RUN="true"; fi
-            if [[ "${{ matrix.os }}" == "windows-2022" && "${{ inputs.run_win }}" == "true" ]]; then SHOULD_RUN="true"; fi
+            if [[ "${{ matrix.target }}" == "mac" && "${{ inputs.run_mac }}" == "true" ]]; then SHOULD_RUN="true"; fi
+            if [[ "${{ matrix.target }}" == "linux" && "${{ inputs.run_linux }}" == "true" ]]; then SHOULD_RUN="true"; fi
+            if [[ "${{ matrix.target }}" == "win" && "${{ inputs.run_win }}" == "true" ]]; then SHOULD_RUN="true"; fi
+            if [[ "${{ matrix.target }}" == "android" && "${{ inputs.run_android }}" == "true" ]]; then SHOULD_RUN="true"; fi
           fi
 
           echo "SHOULD_RUN=$SHOULD_RUN" >> $GITHUB_ENV
-          echo "Decision for ${{ matrix.os }}: $SHOULD_RUN"
+          echo "Decision for ${{ matrix.target }}: $SHOULD_RUN"
 
       - name: Checkout repository
         if: env.SHOULD_RUN == 'true'
@@ -75,88 +92,66 @@ jobs:
           node-version: 24
           cache: "pnpm"
 
-      - name: Install dependencies
-        if: env.SHOULD_RUN == 'true'
-        run: pnpm install --frozen-lockfile
-
-      - name: Build Main/Renderer
-        if: env.SHOULD_RUN == 'true'
-        env:
-          MAIN_VITE_DISCORD_CLIENT_ID: ${{ secrets.MAIN_VITE_DISCORD_CLIENT_ID }}
-        run: pnpm electron:build
-
-      - name: Build and Release (macOS)
-        if: env.SHOULD_RUN == 'true' && matrix.os == 'macos-latest'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm ci:build:mac
-
-      - name: Build and Release (Windows)
-        if: env.SHOULD_RUN == 'true' && matrix.os == 'windows-2022'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm ci:build:win
-
-      - name: Install Linux dependencies
-        if: env.SHOULD_RUN == 'true' && matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libfuse2
-
-      - name: Build and Release (Linux)
-        if: env.SHOULD_RUN == 'true' && matrix.os == 'ubuntu-latest'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm ci:build:linux
-
-  android:
-    if: github.event_name == 'push' || inputs.run_android
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    env:
-      # A signed release build is only possible when the keystore secret exists,
-      # otherwise the job falls back to a debug APK, which is still installable.
-      HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 11.9.0
-
-      - name: Setup Node.js and cache
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
       - name: Setup Java
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'android'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
       - name: Setup Android SDK
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'android'
         uses: android-actions/setup-android@v3
 
       - name: Install dependencies
+        if: env.SHOULD_RUN == 'true'
         run: pnpm install --frozen-lockfile
 
+      - name: Build Main/Renderer
+        if: env.SHOULD_RUN == 'true' && matrix.target != 'android'
+        env:
+          MAIN_VITE_DISCORD_CLIENT_ID: ${{ secrets.MAIN_VITE_DISCORD_CLIENT_ID }}
+        run: pnpm electron:build
+
+      - name: Build and Release (macOS)
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'mac'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm ci:build:mac
+
+      - name: Build and Release (Windows)
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'win'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm ci:build:win
+
+      - name: Install Linux dependencies
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfuse2
+
+      - name: Build and Release (Linux)
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'linux'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm ci:build:linux
+
       - name: Build web assets
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'android'
         run: pnpm build
 
       - name: Sync Capacitor project
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'android'
         run: pnpm exec cap sync android
 
       - name: Read app version
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'android'
         id: version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Decode keystore
-        if: env.HAS_KEYSTORE == 'true'
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'android' && env.HAS_KEYSTORE == 'true'
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -180,7 +175,7 @@ jobs:
           echo "ANDROID_KEYSTORE_PATH=$KEYSTORE" >> $GITHUB_ENV
 
       - name: Build release APK
-        if: env.HAS_KEYSTORE == 'true'
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'android' && env.HAS_KEYSTORE == 'true'
         working-directory: android
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -189,11 +184,12 @@ jobs:
         run: ./gradlew --no-daemon assembleRelease
 
       - name: Build debug APK
-        if: env.HAS_KEYSTORE != 'true'
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'android' && env.HAS_KEYSTORE != 'true'
         working-directory: android
         run: ./gradlew --no-daemon assembleDebug
 
       - name: Collect APK
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'android'
         id: apk
         run: |
           if [[ "$HAS_KEYSTORE" == "true" ]]; then
@@ -209,6 +205,7 @@ jobs:
           echo "name=$NAME" >> $GITHUB_OUTPUT
 
       - name: Upload APK artifact
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'android'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.apk.outputs.name }}
@@ -216,15 +213,16 @@ jobs:
           if-no-files-found: error
 
       - name: Attach APK to the release
+        if: env.SHOULD_RUN == 'true' && matrix.target == 'android'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.target_tag || github.ref_name }}
           files: ${{ steps.apk.outputs.name }}
-          # The desktop jobs publish through electron-builder, which only ever
-          # fills a draft and leaves publishing to a human. Without this the
-          # action finalizes the release once the APK is up, and every desktop
-          # build that finishes later is refused with "existing type not
-          # compatible with publishing type".
+          # The desktop targets publish through electron-builder, which only
+          # ever fills a draft and leaves publishing to a human. Without this
+          # the action finalizes the release once the APK is up, and every
+          # desktop build that finishes later is refused with "existing type
+          # not compatible with publishing type".
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
