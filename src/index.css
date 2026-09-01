@@ -77,6 +77,9 @@
   @media (max-width: 767px) {
     :root {
       --toastify-toast-top: calc(var(--mobile-header-height) + 0.25rem);
+      /* Narrower than the 320px default and never wider than the screen. */
+      --toastify-toast-width: min(86vw, 320px);
+      --toastify-toast-min-height: 0;
     }
 
     /* Keeps a pull down inside the app instead of reloading the page, which
