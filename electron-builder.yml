@@ -37,8 +37,9 @@ nsis:
 mac:
   category: public.app-category.music
   entitlementsInherit: build/entitlements.mac.plist
+  hardenedRuntime: true
+  identity: "Apple Development: nyashenator@gmail.com (66NLM2HRQX)"
   notarize: false
-  identity: "-"
   icon: ./build/icon.icns
   target:
     - target: dmg
