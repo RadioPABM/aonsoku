@@ -12,10 +12,13 @@ import {
   usePlayerActions,
   usePlayerCurrentSong,
   usePlayerFullscreen,
+  usePlayerLoop,
   usePlayerMediaType,
   usePlayerPrevAndNext,
   usePlayerSonglist,
 } from '@/store/player.store'
+import { LoopState } from '@/types/playerContext'
+import { ISong } from '@/types/responses/song'
 import { publicAsset } from '@/utils/publicAsset'
 import { FullscreenArtistLinks } from './artist-links'
 import { FullscreenBackdrop } from './backdrop'
@@ -30,21 +33,11 @@ type MobileTab = 'cover' | 'lyrics' | 'queue'
 export function MobileFullscreenMode() {
   const { isFullscreen, setIsFullscreen } = usePlayerFullscreen()
   const { isSong, isPodcast } = usePlayerMediaType()
-  const { playNextSong, playPrevSong } = usePlayerActions()
-  const { hasPrev, hasNext } = usePlayerPrevAndNext()
   const [tab, setTab] = useState<MobileTab>('cover')
 
   function toggleTab(value: MobileTab) {
     setTab((current) => (current === value ? 'cover' : value))
   }
-
-  // Swiping the artwork sideways walks the queue, the way every phone player
-  // behaves. Lyrics and queue keep their own scrolling.
-  const { offset, isSwiping, handlers } = useSwipe({
-    onSwipeLeft: () => hasNext && playNextSong(),
-    onSwipeRight: () => hasPrev && playPrevSong(),
-    disabled: tab !== 'cover',
-  })
 
   return (
     <Drawer
@@ -79,21 +72,8 @@ export function MobileFullscreenMode() {
             </Button>
           </div>
 
-          <div
-            className="flex-1 min-h-0 flex items-center justify-center py-2"
-            {...handlers}
-          >
-            {tab === 'cover' && (
-              <div
-                className="w-full flex items-center justify-center"
-                style={{
-                  transform: `translate3d(${offset}px, 0, 0)`,
-                  transition: isSwiping ? 'none' : 'transform 200ms ease-out',
-                }}
-              >
-                <MobileCover />
-              </div>
-            )}
+          <div className="flex-1 min-h-0 flex items-center justify-center py-2">
+            {tab === 'cover' && <MobileCover />}
             {tab === 'lyrics' && (
               <div className="w-full h-full overflow-hidden">
                 <LyricsTab />
@@ -145,16 +125,44 @@ export function MobileFullscreenMode() {
   )
 }
 
+const COVER_FRAME = 'w-full max-w-[min(100%,70vh)]'
+
 function MobileCover() {
   const { isPodcast } = usePlayerMediaType()
-  const { podcastList, currentSongIndex } = usePlayerSonglist()
-  const { coverArt, title, artist } = usePlayerCurrentSong()
+  const { podcastList, currentSongIndex, currentList } = usePlayerSonglist()
+  const { playNextSong, playPrevSong } = usePlayerActions()
+  const { hasPrev, hasNext } = usePlayerPrevAndNext()
+  const loopState = usePlayerLoop()
 
   const podcast = podcastList[currentSongIndex]
 
+  const isLoopingQueue = loopState === LoopState.All
+  const previousSong =
+    currentList[currentSongIndex - 1] ??
+    (isLoopingQueue ? currentList[currentList.length - 1] : undefined)
+  const nextSong =
+    currentList[currentSongIndex + 1] ??
+    (isLoopingQueue ? currentList[0] : undefined)
+
+  // Swiping the artwork sideways walks the queue, the way every phone player
+  // behaves: the cover follows the finger and carries on off the screen while
+  // its neighbour arrives behind it.
+  const { handlers, trackProps } = useSwipe({
+    onSwipeLeft: playNextSong,
+    onSwipeRight: playPrevSong,
+    canSwipeLeft: hasNext && nextSong !== undefined,
+    canSwipeRight: hasPrev && previousSong !== undefined,
+    disabled: isPodcast,
+  })
+
   if (isPodcast) {
     return (
-      <div className="w-full max-w-[min(100%,70vh)] aspect-square rounded-lg overflow-hidden bg-accent/60 shadow-custom-5">
+      <div
+        className={clsx(
+          COVER_FRAME,
+          'aspect-square rounded-lg overflow-hidden bg-accent/60 shadow-custom-5',
+        )}
+      >
         <img
           src={podcast?.image_url || publicAsset('default_podcast_art.png')}
           alt={podcast?.title}
@@ -165,19 +173,33 @@ function MobileCover() {
   }
 
   return (
-    <div className="w-full max-w-[min(100%,70vh)] aspect-square rounded-lg overflow-hidden bg-accent/60 shadow-custom-5">
-      <ImageLoader id={coverArt} type="song" size={800}>
-        {(src, isLoading) => (
-          <img
-            src={src}
-            alt={`${artist} - ${title}`}
-            className={clsx(
-              'size-full object-cover transition-opacity duration-300',
-              isLoading ? 'opacity-0' : 'opacity-100',
-            )}
-          />
-        )}
-      </ImageLoader>
+    <div className={clsx(COVER_FRAME, 'overflow-hidden')} {...handlers}>
+      <div className="flex w-full" {...trackProps}>
+        <CoverSlide song={previousSong} />
+        <CoverSlide song={currentList[currentSongIndex]} />
+        <CoverSlide song={nextSong} />
+      </div>
+    </div>
+  )
+}
+
+function CoverSlide({ song }: { song?: ISong }) {
+  return (
+    <div className="w-full shrink-0 aspect-square rounded-lg overflow-hidden bg-accent/60 shadow-custom-5">
+      {song && (
+        <ImageLoader id={song.coverArt} type="song" size={800}>
+          {(src, isLoading) => (
+            <img
+              src={src}
+              alt={`${song.artist} - ${song.title}`}
+              className={clsx(
+                'size-full object-cover transition-opacity duration-300',
+                isLoading ? 'opacity-0' : 'opacity-100',
+              )}
+            />
+          )}
+        </ImageLoader>
+      )}
     </div>
   )
 }
