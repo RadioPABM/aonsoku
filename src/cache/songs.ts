@@ -1,8 +1,27 @@
-import { del, get, keys, set } from 'idb-keyval'
+import {
+  clear,
+  createStore,
+  delMany,
+  get,
+  keys,
+  set,
+  setMany,
+} from 'idb-keyval'
 import { logger } from '@/utils/logger'
 
-const BLOB_PREFIX = 'song-cache:blob:'
-const META_PREFIX = 'song-cache:meta:'
+/**
+ * A store of its own. Audio blobs used to share idb-keyval's default store
+ * with the persisted player queue, which meant gigabytes of media sitting in
+ * front of the read that restores playback, and a clear that had to pick its
+ * own keys out by prefix.
+ */
+const songStore = createStore('song-cache', 'songs')
+
+const BLOB_PREFIX = 'blob:'
+const META_PREFIX = 'meta:'
+
+/** Where the cache lived before it had a store of its own. */
+const LEGACY_PREFIXES = ['song-cache:blob:', 'song-cache:meta:']
 
 export interface CachedSong {
   id: string
@@ -24,14 +43,14 @@ function metaKey(id: string) {
 
 export async function readCachedSongs(): Promise<CachedSong[]> {
   try {
-    const allKeys = await keys()
+    const allKeys = await keys(songStore)
     const metaKeys = allKeys.filter(
       (key): key is string =>
         typeof key === 'string' && key.startsWith(META_PREFIX),
     )
 
     const entries = await Promise.all(
-      metaKeys.map((key) => get<CachedSong>(key)),
+      metaKeys.map((key) => get<CachedSong>(key, songStore)),
     )
 
     return entries.filter((entry): entry is CachedSong => entry !== undefined)
@@ -44,7 +63,7 @@ export async function readCachedSongs(): Promise<CachedSong[]> {
 
 export async function readSongBlob(id: string) {
   try {
-    return await get<Blob>(blobKey(id))
+    return await get<Blob>(blobKey(id), songStore)
   } catch (error) {
     logger.error('[songCache] - Could not read a cached song', { id, error })
 
@@ -78,13 +97,18 @@ export async function writeSong(
   }
 
   try {
-    await set(blobKey(id), blob)
-    await set(metaKey(id), entry)
+    // One transaction: a blob written without its metadata is invisible to
+    // the index, so nothing would ever count it, evict it or clear it.
+    await setMany(
+      [
+        [blobKey(id), blob],
+        [metaKey(id), entry],
+      ],
+      songStore,
+    )
 
     return entry
   } catch (error) {
-    // A half written blob would count against the quota without anything in
-    // the index pointing at it, so it goes before the error travels on.
     await removeSong(id)
     throw error
   }
@@ -92,7 +116,7 @@ export async function writeSong(
 
 export async function updateSongMeta(entry: CachedSong) {
   try {
-    await set(metaKey(entry.id), entry)
+    await set(metaKey(entry.id), entry, songStore)
   } catch (error) {
     logger.error('[songCache] - Could not update a cache entry', {
       id: entry.id,
@@ -103,8 +127,7 @@ export async function updateSongMeta(entry: CachedSong) {
 
 export async function removeSong(id: string) {
   try {
-    await del(blobKey(id))
-    await del(metaKey(id))
+    await delMany([blobKey(id), metaKey(id)], songStore)
   } catch (error) {
     logger.error('[songCache] - Could not remove a cached song', { id, error })
   }
@@ -112,14 +135,32 @@ export async function removeSong(id: string) {
 
 /** Throws on failure: the caller tells the user whether it worked. */
 export async function clearSongCache() {
-  const allKeys = await keys()
-  const ours = allKeys.filter(
-    (key): key is string =>
-      typeof key === 'string' &&
-      (key.startsWith(BLOB_PREFIX) || key.startsWith(META_PREFIX)),
-  )
+  await clear(songStore)
+}
 
-  await Promise.all(ours.map((key) => del(key)))
+/**
+ * Drops what the cache left in the shared store before it moved. The blobs are
+ * not carried over: they are re-downloadable, and copying gigabytes between
+ * stores on start is worse than fetching again on demand.
+ */
+export async function dropLegacyCache() {
+  try {
+    const allKeys = await keys()
+    const ours = allKeys.filter(
+      (key): key is string =>
+        typeof key === 'string' &&
+        LEGACY_PREFIXES.some((prefix) => key.startsWith(prefix)),
+    )
+
+    if (ours.length === 0) return
+
+    await delMany(ours)
+    logger.info('[songCache] - Removed the cache left in the shared store', {
+      count: ours.length,
+    })
+  } catch (error) {
+    logger.error('[songCache] - Could not remove the legacy cache', { error })
+  }
 }
 
 function leastRecentlyUsed(entries: CachedSong[]) {

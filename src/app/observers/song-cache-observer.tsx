@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { dropLegacyCache } from '@/cache/songs'
 import { usePlayerStore } from '@/store/player.store'
 import { useSongCacheStore } from '@/store/song-cache.store'
 
@@ -8,6 +9,9 @@ const LISTENED_RATIO = 0.5
 export function SongCacheObserver() {
   useEffect(() => {
     useSongCacheStore.getState().actions.hydrate()
+
+    // One-time sweep of what an earlier version left in the shared store.
+    dropLegacyCache()
   }, [])
 
   useEffect(() => {
