@@ -67,6 +67,24 @@ export function AudioPlayer({
     const audio = audioRef.current
     if (!audio) return
 
+    // Changing tracks takes the source away for a moment and aborts whatever
+    // was loading, and the browser reports both as errors. Neither is a
+    // failure anyone can act on, and treating them as one also stops playback
+    // just as the next song is about to start.
+    const isInterrupted =
+      !audio.getAttribute('src') ||
+      audio.error === null ||
+      audio.error.code === MediaError.MEDIA_ERR_ABORTED
+
+    if (isInterrupted) {
+      logger.info('Audio load interrupted', {
+        src: audio.src,
+        error: audio.error,
+      })
+
+      return
+    }
+
     logger.error('Audio load error', {
       src: audio.src,
       networkState: audio.networkState,
@@ -122,6 +140,11 @@ export function AudioPlayer({
           audio.pause()
         }
       } catch (error) {
+        // play() rejects with AbortError when the next track starts loading
+        // before this one got going, which is simply what a skip looks like
+        // from in here.
+        if ((error as DOMException | undefined)?.name === 'AbortError') return
+
         logger.error('Audio playback failed', error)
         handleSongError()
       }

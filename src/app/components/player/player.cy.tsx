@@ -1,6 +1,9 @@
 import { usePlayerStore } from '@/store/player.store'
 import { ISong } from '@/types/responses/song'
+import { ToastContainer } from '@/app/observers/toast-container'
 import { Player } from './player'
+
+const SONG_ERROR = 'Unable to play the song, check the Server!'
 
 describe('Player Component', () => {
   beforeEach(() => {
@@ -211,6 +214,52 @@ describe('Player Component', () => {
       cy.get('@loopButton').click()
 
       cy.get('@loopButton').should('not.have.class', 'player-button-active')
+    })
+  })
+
+  it('says nothing when a load is interrupted', () => {
+    cy.changeLang('en-US')
+    cy.mockSongStream()
+
+    cy.fixture('songs/random').then((songs: ISong[]) => {
+      usePlayerStore.getState().actions.setSongList(songs, 0)
+      usePlayerStore.getState().actions.setPlayingState(false)
+
+      cy.mount(
+        <>
+          <ToastContainer />
+          <Player />
+        </>,
+      )
+
+      // What a track change looks like from the element: an error event with
+      // nothing actually wrong on it.
+      cy.getByTestId<HTMLAudioElement>('player-song-audio').then(($audio) => {
+        $audio[0].dispatchEvent(new Event('error'))
+      })
+
+      // Long enough for a toast to have appeared if one were coming.
+      cy.wait(500)
+      cy.contains(SONG_ERROR).should('not.exist')
+    })
+  })
+
+  it('reports a song the server will not serve', () => {
+    cy.changeLang('en-US')
+    cy.intercept('/rest/stream**', { statusCode: 500 })
+
+    cy.fixture('songs/random').then((songs: ISong[]) => {
+      usePlayerStore.getState().actions.setSongList(songs, 0)
+      usePlayerStore.getState().actions.setPlayingState(false)
+
+      cy.mount(
+        <>
+          <ToastContainer />
+          <Player />
+        </>,
+      )
+
+      cy.contains(SONG_ERROR).should('be.visible')
     })
   })
 
