@@ -1,0 +1,36 @@
+/**
+ * Maven Central has been answering 403 to the CI network, and Gradle treats an
+ * HTTP error as a hard failure rather than moving on to the next repository,
+ * so a build stops on the first artifact it cannot fetch.
+ *
+ * This points every Central declaration at Google's read-only mirror of it.
+ * The URL is rewritten in place instead of the repository being replaced, so
+ * it also catches the projects Capacitor regenerates on every sync, whose
+ * build files are not ours to edit.
+ *
+ * Applied with `gradlew -I ci-mirror.init.gradle` from the release workflow.
+ */
+def mirror = 'https://maven-central.storage-download.googleapis.com/maven2/'
+
+def redirectCentral = { repositories ->
+    repositories.all { repo ->
+        if (repo instanceof MavenArtifactRepository) {
+            def url = repo.url.toString()
+
+            if (url.startsWith('https://repo.maven.apache.org') ||
+                url.startsWith('https://repo1.maven.org')) {
+                repo.url = mirror
+                println("Central mirrored for repository '${repo.name}'")
+            }
+        }
+    }
+}
+
+settingsEvaluated { settings ->
+    redirectCentral(settings.pluginManagement.repositories)
+}
+
+allprojects { project ->
+    redirectCentral(project.buildscript.repositories)
+    redirectCentral(project.repositories)
+}

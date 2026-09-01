@@ -79,6 +79,32 @@ jobs:
         shell: bash
         run: echo "GITHUB_REF=refs/tags/${{ inputs.target_tag }}" >> $GITHUB_ENV
 
+      - name: Check the version matches the tag
+        if: env.SHOULD_RUN == 'true'
+        shell: bash
+        # The tag reaches the script through the environment rather than
+        # through ${{ }}, which the template engine would paste into the
+        # script body for the shell to parse as code.
+        env:
+          TARGET_TAG: ${{ inputs.target_tag }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          TAG="${TARGET_TAG:-$REF_NAME}"
+          VERSION=$(node -p "require('./package.json').version")
+
+          # The tag only names the release. Every artifact name, the Android
+          # versionCode and the updater feed come from package.json instead,
+          # so a run where the two disagree ships files labelled with a
+          # version nobody released.
+          if [[ "$TAG" != "v$VERSION" ]]; then
+            echo "::error::Release tag $TAG does not match package.json" \
+              "($VERSION). Push the version bump before releasing, or" \
+              "dispatch the workflow from a commit that carries $TAG."
+            exit 1
+          fi
+
+          echo "Releasing $VERSION as $TAG"
+
       - name: Install pnpm
         if: env.SHOULD_RUN == 'true'
         uses: pnpm/action-setup@v3
@@ -181,12 +207,12 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew --no-daemon assembleRelease
+        run: ./gradlew --no-daemon -I ci-mirror.init.gradle assembleRelease
 
       - name: Build debug APK
         if: env.SHOULD_RUN == 'true' && matrix.target == 'android' && env.HAS_KEYSTORE != 'true'
         working-directory: android
-        run: ./gradlew --no-daemon assembleDebug
+        run: ./gradlew --no-daemon -I ci-mirror.init.gradle assembleDebug
 
       - name: Collect APK
         if: env.SHOULD_RUN == 'true' && matrix.target == 'android'
