@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom'
+import { Dot } from '@/app/components/dot'
 import { CoverImage } from '@/app/components/table/cover-image'
 import { SimpleTooltip } from '@/app/components/ui/simple-tooltip'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes/routesList'
 import { useMainDrawerState } from '@/store/player.store'
 import { ISong } from '@/types/responses/song'
+import { convertSecondsToTime } from '@/utils/convertSecondsToTime'
 
 export function TableSongTitle({ song }: { song: ISong }) {
   return (
@@ -24,6 +26,17 @@ export function TableSongTitle({ song }: { song: ISong }) {
         </SimpleTooltip>
         <div className="flex items-center truncate">
           <TableArtists song={song} />
+          {/* The length has no column of its own on a phone, so it rides
+              along here rather than being dropped. */}
+          {song.duration > 0 && (
+            <span
+              data-testid="row-duration"
+              className="flex items-center md:hidden text-xs text-foreground/70 text-nowrap"
+            >
+              <Dot />
+              {convertSecondsToTime(song.duration)}
+            </span>
+          )}
         </div>
       </div>
     </div>

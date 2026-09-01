@@ -151,6 +151,9 @@ export function songsColumns(): ColumnDefType<ISong>[] {
         width: 80,
         maxWidth: 80,
       },
+      // On a phone the length rides along under the title instead, which
+      // leaves the row 80px to spend on the title itself.
+      className: 'hidden md:flex',
       enableSorting: true,
       sortingFn: 'basic',
       header: ({ column, table }) => (
@@ -249,7 +252,7 @@ export function songsColumns(): ColumnDefType<ISong>[] {
         maxWidth: 120,
         justifyContent: 'end',
       },
-      className: '!w-14 !max-w-14 md:!w-[120px] md:!max-w-[120px]',
+      className: '!w-[88px] !max-w-[88px] md:!w-[120px] md:!max-w-[120px]',
       header: () => {
         const hideFavoritesSection = useAppStore().pages.hideFavoritesSection
         if (hideFavoritesSection) return null
