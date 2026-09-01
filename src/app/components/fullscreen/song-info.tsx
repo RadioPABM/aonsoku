@@ -4,8 +4,7 @@ import { MarqueeTitle } from '@/app/components/fullscreen/marquee-title'
 import { SongQualityBadge } from '@/app/components/song/quality-badge'
 import { Badge } from '@/app/components/ui/badge'
 import { usePlayerStore } from '@/store/player.store'
-import { ISong } from '@/types/responses/song'
-import { ALBUM_ARTISTS_MAX_NUMBER } from '@/utils/multipleArtists'
+import { FullscreenArtistLinks } from './artist-links'
 import { FullscreenSongImage } from './song-image'
 
 const MemoFullscreenSongImage = memo(FullscreenSongImage)
@@ -28,7 +27,10 @@ export function SongInfo() {
             {currentSong.album}
           </p>
           <Dot className="text-foreground/70" />
-          <ArtistNames song={currentSong} />
+          <FullscreenArtistLinks
+            song={currentSong}
+            className="text-shadow-lg"
+          />
         </div>
         <div className="flex gap-2 mt-2 2xl:mt-3 mb-[1px]">
           {currentSong.genre && (
@@ -42,25 +44,4 @@ export function SongInfo() {
       </div>
     </div>
   )
-}
-
-function ArtistNames({ song }: { song: ISong }) {
-  const { artist, artists } = song
-
-  if (artists && artists.length > 1) {
-    const data = artists.slice(0, ALBUM_ARTISTS_MAX_NUMBER)
-
-    return (
-      <div className="flex items-center gap-1">
-        {data.map(({ id, name }, index) => (
-          <div key={id} className="flex">
-            <p className="truncate text-shadow-lg">{name}</p>
-            {index < data.length - 1 && ','}
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  return <p className="truncate text-shadow-lg">{artist}</p>
 }

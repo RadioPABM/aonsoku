@@ -1,18 +1,23 @@
 import clsx from 'clsx'
 import { ChevronDownIcon, ListMusicIcon, MicVocalIcon } from 'lucide-react'
 import { useState } from 'react'
+import { Dot } from '@/app/components/dot'
 import { ImageLoader } from '@/app/components/image-loader'
 import { PodcastPlaybackRate } from '@/app/components/player/podcast-playback-rate'
 import { QueueSongList } from '@/app/components/queue/song-list'
 import { Button } from '@/app/components/ui/button'
 import { Drawer, DrawerContent, DrawerTitle } from '@/app/components/ui/drawer'
+import { useSwipe } from '@/app/hooks/use-swipe'
 import {
+  usePlayerActions,
   usePlayerCurrentSong,
   usePlayerFullscreen,
   usePlayerMediaType,
+  usePlayerPrevAndNext,
   usePlayerSonglist,
 } from '@/store/player.store'
 import { publicAsset } from '@/utils/publicAsset'
+import { FullscreenArtistLinks } from './artist-links'
 import { FullscreenBackdrop } from './backdrop'
 import { buttonsStyle, FullscreenControls } from './controls'
 import { LikeButton } from './like-button'
@@ -25,11 +30,21 @@ type MobileTab = 'cover' | 'lyrics' | 'queue'
 export function MobileFullscreenMode() {
   const { isFullscreen, setIsFullscreen } = usePlayerFullscreen()
   const { isSong, isPodcast } = usePlayerMediaType()
+  const { playNextSong, playPrevSong } = usePlayerActions()
+  const { hasPrev, hasNext } = usePlayerPrevAndNext()
   const [tab, setTab] = useState<MobileTab>('cover')
 
   function toggleTab(value: MobileTab) {
     setTab((current) => (current === value ? 'cover' : value))
   }
+
+  // Swiping the artwork sideways walks the queue, the way every phone player
+  // behaves. Lyrics and queue keep their own scrolling.
+  const { offset, isSwiping, handlers } = useSwipe({
+    onSwipeLeft: () => hasNext && playNextSong(),
+    onSwipeRight: () => hasPrev && playPrevSong(),
+    disabled: tab !== 'cover',
+  })
 
   return (
     <Drawer
@@ -64,8 +79,21 @@ export function MobileFullscreenMode() {
             </Button>
           </div>
 
-          <div className="flex-1 min-h-0 flex items-center justify-center py-2">
-            {tab === 'cover' && <MobileCover />}
+          <div
+            className="flex-1 min-h-0 flex items-center justify-center py-2"
+            {...handlers}
+          >
+            {tab === 'cover' && (
+              <div
+                className="w-full flex items-center justify-center"
+                style={{
+                  transform: `translate3d(${offset}px, 0, 0)`,
+                  transition: isSwiping ? 'none' : 'transform 200ms ease-out',
+                }}
+              >
+                <MobileCover />
+              </div>
+            )}
             {tab === 'lyrics' && (
               <div className="w-full h-full overflow-hidden">
                 <LyricsTab />
@@ -178,14 +206,12 @@ function TabButton({ active, onClick, children }: TabButtonProps) {
 function MobileSongInfo() {
   const { isPodcast } = usePlayerMediaType()
   const { podcastList, currentSongIndex } = usePlayerSonglist()
-  const { title, artist, album } = usePlayerCurrentSong()
+  const currentSong = usePlayerCurrentSong()
+  const { title, album } = currentSong
 
   const podcast = podcastList[currentSongIndex]
 
   const mainTitle = isPodcast ? podcast?.title : title
-  const subtitle = isPodcast
-    ? podcast?.podcast.title
-    : [artist, album].filter(Boolean).join(' • ')
 
   return (
     <div className="w-full flex flex-col overflow-hidden mt-4">
@@ -194,9 +220,21 @@ function MobileSongInfo() {
           {mainTitle}
         </h2>
       </MarqueeTitle>
-      <p className="text-sm text-foreground/70 truncate text-shadow-lg">
-        {subtitle}
-      </p>
+      {isPodcast ? (
+        <p className="text-sm text-foreground/70 truncate text-shadow-lg">
+          {podcast?.podcast.title}
+        </p>
+      ) : (
+        <div className="flex items-center gap-1 text-sm text-foreground/70 truncate text-shadow-lg">
+          <FullscreenArtistLinks song={currentSong} />
+          {album && (
+            <>
+              <Dot />
+              <span className="truncate">{album}</span>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }
