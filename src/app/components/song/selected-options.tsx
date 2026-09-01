@@ -2,6 +2,7 @@ import { Table } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'
 import { OptionsButtons } from '@/app/components/options/buttons'
 import { DownloadOptionHandler } from '@/app/components/options/download-handler'
+import { OfflineOption } from '@/app/components/song-cache/offline-option'
 import {
   ContextMenuItem,
   ContextMenuSeparator,
@@ -90,6 +91,8 @@ export function SelectedSongsMenuOptions({ table }: SelectedSongsProps) {
           handlePlayLast()
         }}
       />
+      <ContextMenuSeparator />
+      <OfflineOption songs={songs} variant="context" />
       <ContextMenuSeparator />
       <OptionsButtons.Share
         variant="context"

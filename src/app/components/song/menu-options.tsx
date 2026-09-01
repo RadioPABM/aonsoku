@@ -1,5 +1,6 @@
 import { OptionsButtons } from '@/app/components/options/buttons'
 import { DownloadOptionHandler } from '@/app/components/options/download-handler'
+import { OfflineOption } from '@/app/components/song-cache/offline-option'
 import { ContextMenuSeparator } from '@/app/components/ui/context-menu'
 import { useOptions } from '@/app/hooks/use-options'
 import { useAppStore } from '@/store/app.store'
@@ -47,6 +48,8 @@ export function SongMenuOptions({
           playLast([song])
         }}
       />
+      <ContextMenuSeparator />
+      <OfflineOption songs={[song]} variant={variant} />
       <ContextMenuSeparator />
       <OptionsButtons.Share
         variant={variant}

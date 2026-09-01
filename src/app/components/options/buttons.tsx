@@ -1,6 +1,8 @@
 import omit from 'lodash/omit'
 import {
+  ArrowDownToLine,
   CheckIcon,
+  CircleCheck,
   CornerDownRight,
   DownloadIcon,
   Info,
@@ -71,6 +73,38 @@ function Share({ variant = 'dropdown', ...props }: DropdownMenuItemProps) {
       variant={variant}
       icon={<CornerDownRight className="mr-2 h-4 w-4" />}
       label={t('options.share')}
+      {...props}
+    />
+  )
+}
+
+function SaveOffline({
+  variant = 'dropdown',
+  ...props
+}: DropdownMenuItemProps) {
+  const { t } = useTranslation()
+
+  return (
+    <MenuItemFactory
+      variant={variant}
+      icon={<ArrowDownToLine className="mr-2 h-4 w-4" />}
+      label={t('songCache.song.save')}
+      {...props}
+    />
+  )
+}
+
+function RemoveOffline({
+  variant = 'dropdown',
+  ...props
+}: DropdownMenuItemProps) {
+  const { t } = useTranslation()
+
+  return (
+    <MenuItemFactory
+      variant={variant}
+      icon={<CircleCheck className="mr-2 h-4 w-4 text-primary" />}
+      label={t('songCache.song.remove')}
       {...props}
     />
   )
@@ -214,6 +248,8 @@ export const OptionsButtons = {
   PlayNext,
   PlayLast,
   Download,
+  SaveOffline,
+  RemoveOffline,
   Share,
   AddToPlaylistOption,
   EditPlaylist,
