@@ -205,7 +205,7 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
                 state.pages.artistsPageViewType = type
               })
             },
-            imagesCacheLayerEnabled: IMAGE_CACHE_ENABLED ?? false,
+            imagesCacheLayerEnabled: IMAGE_CACHE_ENABLED ?? true,
             setImagesCacheLayerEnabled: (value) => {
               set((state) => {
                 state.pages.imagesCacheLayerEnabled = value
@@ -433,8 +433,7 @@ export const useAppStore = createWithEqualityFn<IAppContext>()(
               hidePlaylistsSection =
                 persisted.pages.hidePlaylistsSection ?? false
               hideRadiosSection = persisted.pages.hideRadiosSection ?? false
-              enableImageCache =
-                persisted.pages.imagesCacheLayerEnabled ?? false
+              enableImageCache = persisted.pages.imagesCacheLayerEnabled ?? true
               enableLyricsCache = persisted.pages.lyricsCacheEnabled ?? true
               enableMediaCache = persisted.pages.mediaCacheEnabled ?? true
             }
