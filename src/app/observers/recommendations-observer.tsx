@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { shallow } from 'zustand/shallow'
-import { subsonic } from '@/service/subsonic'
+import { getRecommendedSongs } from '@/service/recommendations'
 import { usePlayerStore } from '@/store/player.store'
 import { LoopState } from '@/types/playerContext'
 import { logger } from '@/utils/logger'
@@ -38,12 +38,12 @@ export function RecommendationsObserver() {
       inFlight = true
 
       try {
-        const similar = await subsonic.songs.getSimilarSongs(
-          song.id,
-          RECOMMENDED_COUNT,
-        )
+        const recommended = await getRecommendedSongs(song, {
+          exclude: new Set(currentList.map((queued) => queued.id)),
+          limit: RECOMMENDED_COUNT,
+        })
 
-        if (similar.length === 0) return
+        if (recommended.length === 0) return
 
         // The queue may have moved on while the request was in flight.
         const current = usePlayerStore.getState().songlist
@@ -51,7 +51,7 @@ export function RecommendationsObserver() {
           return
         }
 
-        usePlayerStore.getState().actions.appendToQueue(similar)
+        usePlayerStore.getState().actions.appendToQueue(recommended)
       } catch (error) {
         logger.error('[recommendations] - Could not extend the queue', {
           id: song.id,
