@@ -185,6 +185,18 @@ describe('Player Component', () => {
         expect($el.loop, 'Loop state should be false').to.equal(false)
       })
 
+      // The button cycles Off -> All -> One, and only "repeat one" loops the
+      // audio element itself.
+      cy.get('@loopButton').click()
+
+      cy.get('@loopButton').should('have.class', 'player-button-active')
+
+      cy.getByTestId<HTMLAudioElement>('player-song-audio').then(($audio) => {
+        const $el = $audio[0]
+
+        expect($el.loop, 'Loop state should still be false').to.equal(false)
+      })
+
       cy.get('@loopButton').click()
 
       cy.get('@loopButton').should('have.class', 'player-button-active')
@@ -194,6 +206,11 @@ describe('Player Component', () => {
 
         expect($el.loop, 'Loop state should be true').to.equal(true)
       })
+
+      // Back to the start, so the next test finds the player untouched.
+      cy.get('@loopButton').click()
+
+      cy.get('@loopButton').should('not.have.class', 'player-button-active')
     })
   })
 

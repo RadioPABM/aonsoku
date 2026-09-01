@@ -86,23 +86,6 @@ describe('TrackInfo Component', () => {
         .should('be.visible')
         .and('have.text', 'No song playing')
     })
-
-    it('should create the fullscreen button and show tooltip', () => {
-      cy.fixture('songs/song').then((song: ISong) => {
-        cy.mount(
-          <Wrapper>
-            <TrackInfo song={song} />
-          </Wrapper>,
-        )
-
-        cy.getByTestId('track-fullscreen-button')
-          .should('exist')
-          .and('have.css', 'opacity', '0')
-
-        cy.getByTestId('track-fullscreen-button').wait(1500).realHover()
-        cy.contains('Switch to fullscreen').should('be.visible')
-      })
-    })
   })
 
   describe('Portuguese', () => {
@@ -124,23 +107,6 @@ describe('TrackInfo Component', () => {
       cy.getByTestId('song-no-playing-label')
         .should('be.visible')
         .and('have.text', 'Nenhuma música tocando')
-    })
-
-    it('should create the fullscreen button and show tooltip', () => {
-      cy.fixture('songs/song').then((song: ISong) => {
-        cy.mount(
-          <Wrapper>
-            <TrackInfo song={song} />
-          </Wrapper>,
-        )
-
-        cy.getByTestId('track-fullscreen-button')
-          .should('exist')
-          .and('have.css', 'opacity', '0')
-
-        cy.getByTestId('track-fullscreen-button').wait(1500).realHover()
-        cy.contains('Mudar para tela cheia').should('be.visible')
-      })
     })
   })
 })

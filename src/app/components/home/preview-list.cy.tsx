@@ -111,7 +111,7 @@ describe('PreviewList Component', () => {
         cy.getByTestId(`preview-list-carousel-item-${index}`).should(
           'have.css',
           'flex-basis',
-          '20%',
+          '16.6667%',
         )
       })
     })

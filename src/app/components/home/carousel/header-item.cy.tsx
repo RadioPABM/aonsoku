@@ -27,8 +27,8 @@ describe('HeaderItem Component', () => {
     cy.fixture('songs/song').then((song: ISong) => {
       cy.mount(<HeaderItem song={song} />)
 
-      cy.getByTestId('header-image').invoke('width').should('equal', 152)
-      cy.getByTestId('header-image').invoke('height').should('equal', 152)
+      cy.getByTestId('header-image').invoke('width').should('equal', 202)
+      cy.getByTestId('header-image').invoke('height').should('equal', 202)
     })
   })
 

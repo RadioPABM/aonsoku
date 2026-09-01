@@ -1,9 +1,25 @@
 import { ISong } from '@/types/responses/song'
-import HomeHeader from './header'
+import { HomeHeader } from './header'
+
+// The component fetches its own songs, so the list arrives through the
+// Subsonic endpoint instead of a prop.
+function mockRandomSongs(songs: ISong[]) {
+  cy.intercept('/rest/getRandomSongs**', {
+    body: {
+      'subsonic-response': {
+        status: 'ok',
+        randomSongs: { song: songs },
+      },
+    },
+  }).as('randomSongs')
+}
 
 describe('HomeHeader Component', () => {
   it('should not show component if songs list is empty', () => {
-    cy.mount(<HomeHeader songs={[]} />)
+    mockRandomSongs([])
+
+    cy.mount(<HomeHeader />)
+    cy.wait('@randomSongs')
 
     cy.getByTestId('header-carousel').should('not.exist')
   })
@@ -12,7 +28,10 @@ describe('HomeHeader Component', () => {
     cy.mockCoverArt()
 
     cy.fixture('songs/random').then((songs: ISong[]) => {
-      cy.mount(<HomeHeader songs={songs} />)
+      mockRandomSongs(songs)
+
+      cy.mount(<HomeHeader />)
+      cy.wait('@randomSongs')
 
       songs.forEach((song, index) => {
         cy.getByTestId(`carousel-header-song-${index}`).as('activeCarousel')
