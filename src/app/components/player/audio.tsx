@@ -112,6 +112,10 @@ export function AudioPlayer({
 
       try {
         if (isPlaying) {
+          // A song served from the local cache has no source until its blob
+          // has been read; the autoplay attribute starts it once it lands.
+          if (!audio.getAttribute('src')) return
+
           if (isSong) await resumeContext()
           await audio.play()
         } else {

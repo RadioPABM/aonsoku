@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Actions } from '@/app/components/actions'
+import { CollectionCacheButton } from '@/app/components/song-cache/collection-button'
 import {
   useIsPlaylistPlaying,
   usePlayerActions,
@@ -72,6 +73,12 @@ export function PlaylistButtons({ playlist }: PlaylistButtonsProps) {
       >
         <Actions.ShuffleIcon />
       </Actions.Button>
+
+      <CollectionCacheButton
+        collectionId={playlist.id}
+        songs={playlist.entry ?? []}
+        disabled={!playlist.entry || playlist.entry.length === 0}
+      />
 
       <Actions.Dropdown
         tooltip={buttonsTooltips.options}

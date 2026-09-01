@@ -3,6 +3,7 @@ import { FeatureContent } from './features'
 import { HomeContent } from './home'
 import { PodcastContent } from './podcast'
 import { SidebarContent } from './sidebar'
+import { SongCacheContent } from './song-cache'
 
 export function Content() {
   return (
@@ -12,6 +13,7 @@ export function Content() {
       <FeatureContent />
       <PodcastContent />
       <CachesContent />
+      <SongCacheContent />
     </div>
   )
 }

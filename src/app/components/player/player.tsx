@@ -1,13 +1,13 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
-import { getSongStreamUrl } from '@/api/httpClient'
 import { getProxyURL } from '@/api/podcastClient'
 import { MiniPlayerButton } from '@/app/components/mini-player/button'
 import { RadioInfo } from '@/app/components/player/radio-info'
 import { TrackInfo } from '@/app/components/player/track-info'
 import { useIsMobile } from '@/app/hooks/use-mobile'
+import { useSongSource } from '@/app/hooks/use-song-source'
 import { cn } from '@/lib/utils'
 import { podcasts } from '@/service/podcasts'
-import { useAppMediaCache, useAppStore } from '@/store/app.store'
+import { useAppStore } from '@/store/app.store'
 import {
   getVolume,
   usePlayerActions,
@@ -20,7 +20,6 @@ import {
   useReplayGainState,
 } from '@/store/player.store'
 import { LoopState } from '@/types/playerContext'
-import { ensureSupportForAlac } from '@/utils/alac'
 import { hasPiPSupport } from '@/utils/browser'
 import { logger } from '@/utils/logger'
 import { ReplayGainParams } from '@/utils/replayGain'
@@ -81,21 +80,7 @@ export function Player() {
   const radio = radioList[currentSongIndex]
   const podcast = podcastList[currentSongIndex]
 
-  const mediaCacheEnabled = useAppMediaCache()
-  const songId = song?.id
-
-  const songStreamUrl = useMemo(() => {
-    if (!songId) return ''
-
-    const cacheBustToken = mediaCacheEnabled ? undefined : Date.now().toString()
-
-    return getSongStreamUrl(
-      songId,
-      undefined,
-      ensureSupportForAlac(song.suffix),
-      cacheBustToken,
-    )
-  }, [songId, song, mediaCacheEnabled])
+  const songSource = useSongSource(song)
 
   const getAudioRef = useCallback(() => {
     if (isRadio) return radioRef
@@ -280,7 +265,7 @@ export function Player() {
       {isSong && song && (
         <AudioPlayer
           replayGain={trackReplayGain}
-          src={songStreamUrl}
+          src={songSource}
           autoPlay={isPlaying}
           audioRef={audioRef}
           loop={loopState === LoopState.One}

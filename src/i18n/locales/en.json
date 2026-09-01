@@ -822,6 +822,25 @@
           "label": "Enable Carousel Loop",
           "info": "When enabled, the home page carousel will loop back to the first song after reaching the end."
         }
+      },
+      "songCache": {
+        "group": "Offline songs",
+        "description": "Keep songs on this device so they play without the server.",
+        "auto": {
+          "label": "Keep songs you listen to",
+          "info": "Once half a song has played it is downloaded in the background. The audio already streamed cannot be reused, so the song is fetched a second time."
+        },
+        "limit": {
+          "label": "Cache limit",
+          "info": "When the limit is passed, the songs you have not played in the longest time are dropped. Albums, playlists and artists you saved on purpose are kept."
+        },
+        "usage": "{{used}} used by {{songs}} songs",
+        "clear": {
+          "button": "Remove all",
+          "info": "Deletes every song stored on this device, including the ones you saved on purpose.",
+          "success": "Offline songs removed.",
+          "error": "Could not remove the offline songs."
+        }
       }
     },
     "accounts": {
@@ -869,5 +888,13 @@
     "unhandled": "Unhandled Error",
     "notFound": "Not Found",
     "backToHome": "Back to home"
+  },
+  "songCache": {
+    "collection": {
+      "save": "Save for offline listening",
+      "remove": "Remove the offline copy",
+      "progress": "Saving {{done}} of {{total}}",
+      "preparing": "Preparing the download"
+    }
   }
 }

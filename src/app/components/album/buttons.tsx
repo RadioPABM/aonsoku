@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Actions } from '@/app/components/actions'
+import { CollectionCacheButton } from '@/app/components/song-cache/collection-button'
 import { subsonic } from '@/service/subsonic'
 import { useAppPages, useAppStore } from '@/store/app.store'
 import {
@@ -115,6 +116,12 @@ export function AlbumButtons({ album, showInfoButton }: AlbumButtonsProps) {
           </Actions.Button>
         </>
       )}
+
+      <CollectionCacheButton
+        collectionId={album.id}
+        songs={album.song}
+        disabled={album.song.length === 0}
+      />
 
       {showInfoButton && (
         <Actions.Button

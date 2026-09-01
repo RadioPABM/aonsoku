@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Actions } from '@/app/components/actions'
+import { CollectionCacheButton } from '@/app/components/song-cache/collection-button'
 import { useSongList } from '@/app/hooks/use-song-list'
 import { subsonic } from '@/service/subsonic'
 import { useAppPages, useAppStore } from '@/store/app.store'
@@ -126,6 +127,12 @@ export function ArtistButtons({
           </Actions.Button>
         </>
       )}
+      <CollectionCacheButton
+        collectionId={artist.id}
+        loadSongs={() => getArtistAllSongs(artist.name)}
+        disabled={isArtistEmpty}
+      />
+
       {showInfoButton && (
         <Actions.Button
           tooltip={buttonsTooltips.info}
