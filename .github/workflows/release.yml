@@ -220,5 +220,11 @@ jobs:
         with:
           tag_name: ${{ inputs.target_tag || github.ref_name }}
           files: ${{ steps.apk.outputs.name }}
+          # The desktop jobs publish through electron-builder, which only ever
+          # fills a draft and leaves publishing to a human. Without this the
+          # action finalizes the release once the APK is up, and every desktop
+          # build that finishes later is refused with "existing type not
+          # compatible with publishing type".
+          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
