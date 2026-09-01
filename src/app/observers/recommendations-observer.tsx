@@ -6,6 +6,8 @@ import { LoopState } from '@/types/playerContext'
 import { logger } from '@/utils/logger'
 
 const RECOMMENDED_COUNT = 20
+/** How long a failed attempt keeps the queue from asking again. */
+const RETRY_COOLDOWN_MS = 60_000
 
 /**
  * Keeps the queue going. Once the last song in it starts playing, songs the
@@ -17,6 +19,7 @@ export function RecommendationsObserver() {
     // The seed of the last extension, so a queue sitting on its final song
     // does not ask again on every state change.
     let lastSeedId: string | null = null
+    let retryAfter = 0
     let inFlight = false
 
     async function extendQueue() {
@@ -33,6 +36,7 @@ export function RecommendationsObserver() {
 
       if (!song || currentSongIndex !== currentList.length - 1) return
       if (inFlight || song.id === lastSeedId) return
+      if (Date.now() < retryAfter) return
 
       lastSeedId = song.id
       inFlight = true
@@ -53,6 +57,12 @@ export function RecommendationsObserver() {
 
         usePlayerStore.getState().actions.appendToQueue(recommended)
       } catch (error) {
+        // A failure is usually the network rather than the song, so the seed
+        // is released and only a cooldown keeps the retries apart. Holding it
+        // would leave the queue unable to grow for the rest of the session.
+        lastSeedId = null
+        retryAfter = Date.now() + RETRY_COOLDOWN_MS
+
         logger.error('[recommendations] - Could not extend the queue', {
           id: song.id,
           error,

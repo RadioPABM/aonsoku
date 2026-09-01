@@ -25,6 +25,27 @@ import { publicAsset } from '@/utils/publicAsset'
 
 const podcastPlaceholder = publicAsset('default_podcast_art.png')
 
+/**
+ * The only part of the bar that follows playback, and the only subscriber to
+ * it. Kept apart so the four-times-a-second progress does not re-render the
+ * cover, its colour hook and both buttons alongside it.
+ */
+function MiniPlayerProgress() {
+  const progress = usePlayerProgress()
+  const duration = usePlayerDuration()
+
+  const percentage = duration > 0 ? (progress / duration) * 100 : 0
+
+  return (
+    <div className="absolute top-0 left-0 right-0 h-[2px] bg-muted">
+      <div
+        className="h-full bg-primary transition-[width] duration-300"
+        style={{ width: `${percentage}%` }}
+      />
+    </div>
+  )
+}
+
 export function MobileMiniPlayer() {
   const { t } = useTranslation()
   const { currentList, currentSongIndex, radioList, podcastList } =
@@ -35,15 +56,12 @@ export function MobileMiniPlayer() {
   const { hasNext } = usePlayerPrevAndNext()
   const { togglePlayPause, playNextSong } = usePlayerActions()
   const { setIsFullscreen } = usePlayerFullscreen()
-  const progress = usePlayerProgress()
-  const duration = usePlayerDuration()
 
   const song = currentList[currentSongIndex]
   const radio = radioList[currentSongIndex]
   const podcast = podcastList[currentSongIndex]
 
   const isEmpty = !song && !radio && !podcast
-  const percentage = duration > 0 ? (progress / duration) * 100 : 0
 
   const title = isRadio
     ? radio?.name
@@ -59,14 +77,7 @@ export function MobileMiniPlayer() {
 
   return (
     <div className="w-full h-mobile-mini-player relative bg-background border-t">
-      {(isSong || isPodcast) && (
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-muted">
-          <div
-            className="h-full bg-primary transition-[width] duration-300"
-            style={{ width: `${percentage}%` }}
-          />
-        </div>
-      )}
+      {(isSong || isPodcast) && <MiniPlayerProgress />}
 
       <div className="w-full h-full flex items-center gap-3 pl-2 pr-1">
         <button

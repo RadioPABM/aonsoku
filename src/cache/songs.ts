@@ -110,19 +110,16 @@ export async function removeSong(id: string) {
   }
 }
 
+/** Throws on failure: the caller tells the user whether it worked. */
 export async function clearSongCache() {
-  try {
-    const allKeys = await keys()
-    const ours = allKeys.filter(
-      (key): key is string =>
-        typeof key === 'string' &&
-        (key.startsWith(BLOB_PREFIX) || key.startsWith(META_PREFIX)),
-    )
+  const allKeys = await keys()
+  const ours = allKeys.filter(
+    (key): key is string =>
+      typeof key === 'string' &&
+      (key.startsWith(BLOB_PREFIX) || key.startsWith(META_PREFIX)),
+  )
 
-    await Promise.all(ours.map((key) => del(key)))
-  } catch (error) {
-    logger.error('[songCache] - Could not clear the cache', { error })
-  }
+  await Promise.all(ours.map((key) => del(key)))
 }
 
 function leastRecentlyUsed(entries: CachedSong[]) {

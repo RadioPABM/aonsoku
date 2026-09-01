@@ -78,6 +78,16 @@ interface CacheOptions {
   jobId?: string
 }
 
+async function download(fetcher: typeof fetch, url: string) {
+  const response = await fetcher(url)
+
+  if (!response.ok) {
+    throw new Error(`Stream request failed with ${response.status}`)
+  }
+
+  return response.blob()
+}
+
 async function fetchSongBlob(song: ISong) {
   const url = getSongStreamUrl(
     song.id,
@@ -85,13 +95,23 @@ async function fetchSongBlob(song: ISong) {
     ensureSupportForAlac(song.suffix),
   )
 
-  const response = await fetch(url)
+  // Capacitor replaces window.fetch with one that carries the body across the
+  // native bridge as base64, which for a whole audio file means several times
+  // its size in transient strings. The bridge keeps the untouched fetch, and
+  // the streaming <audio> element already needs the server to allow this
+  // origin, so the plain one is safe to use here.
+  const untouched = (window as { CapacitorWebFetch?: typeof fetch })
+    .CapacitorWebFetch
 
-  if (!response.ok) {
-    throw new Error(`Stream request failed with ${response.status}`)
+  if (!untouched) return download(fetch, url)
+
+  try {
+    return await download(untouched.bind(window), url)
+  } catch (error) {
+    logger.info('[songCache] - Falling back to the native bridge', { error })
+
+    return download(fetch, url)
   }
-
-  return response.blob()
 }
 
 async function runWithLimit<T>(
@@ -143,21 +163,11 @@ export const useSongCacheStore = createWithEqualityFn<ISongCacheContext>()(
 
             cacheSongs: async (songs, options = {}) => {
               const { pinned = false, jobId } = options
-              const { entries, pending } = get()
+              const { pending } = get()
 
               // Pinning something the player already saved on its own only
               // has to flip the flag, no second download.
-              const toPin = pinned
-                ? songs.filter((song) => entries[song.id]?.pinned === false)
-                : []
-
-              for (const song of toPin) {
-                const entry = { ...entries[song.id], pinned: true }
-                await updateSongMeta(entry)
-                set((state) => {
-                  state.entries[song.id] = entry
-                })
-              }
+              if (pinned) await pinExisting(songs)
 
               const missing = songs.filter(
                 (song) => !get().entries[song.id] && !pending[song.id],
@@ -223,17 +233,32 @@ export const useSongCacheStore = createWithEqualityFn<ISongCacheContext>()(
                 })
               }
 
+              // A song the auto-cacher was already fetching finishes unpinned,
+              // and one saved on purpose must not be left for the eviction to
+              // take, so the pass runs again now that they have all landed.
+              if (pinned) await pinExisting(songs)
+
               await evictOverLimit()
             },
 
             saveCollection: async (id, songs) => {
-              set((state) => {
-                state.collections[id] = songs.map((song) => song.id)
-              })
-
               await get().actions.cacheSongs(songs, {
                 pinned: true,
                 jobId: id,
+              })
+
+              // Recorded after the fact, and only for what is really on the
+              // device: writing it up front left the button claiming a saved
+              // album when every download had failed.
+              const { entries } = get()
+              const stored = songs
+                .filter((song) => entries[song.id])
+                .map((song) => song.id)
+
+              if (stored.length === 0) return
+
+              set((state) => {
+                state.collections[id] = stored
               })
             },
 
@@ -257,12 +282,19 @@ export const useSongCacheStore = createWithEqualityFn<ISongCacheContext>()(
             },
 
             clear: async () => {
-              await clearSongCache()
+              try {
+                await clearSongCache()
 
-              set((state) => {
-                state.entries = {}
-                state.collections = {}
-              })
+                set((state) => {
+                  state.entries = {}
+                  state.collections = {}
+                })
+              } catch (error) {
+                // Some keys may have gone before the failure, so the index in
+                // memory can no longer be trusted.
+                await get().actions.hydrate()
+                throw error
+              }
             },
 
             touch: (id) => {
@@ -283,7 +315,9 @@ export const useSongCacheStore = createWithEqualityFn<ISongCacheContext>()(
                 state.settings.limitBytes = value
               })
 
-              evictOverLimit()
+              evictOverLimit().catch((error) => {
+                logger.error('[songCache] - Eviction failed', { error })
+              })
             },
 
             setAutoCacheEnabled: (value) => {
@@ -348,6 +382,21 @@ async function storeSong(id: string, blob: Blob, pinned: boolean) {
   }
 
   throw new Error('Unreachable')
+}
+
+/** Flips the pinned flag on songs already in the cache, without downloading. */
+async function pinExisting(songs: ISong[]) {
+  const { entries } = useSongCacheStore.getState()
+  const toPin = songs.filter((song) => entries[song.id]?.pinned === false)
+
+  for (const song of toPin) {
+    const entry = { ...entries[song.id], pinned: true }
+
+    await updateSongMeta(entry)
+    useSongCacheStore.setState((state) => {
+      state.entries[song.id] = entry
+    })
+  }
 }
 
 async function evictOverLimit() {
