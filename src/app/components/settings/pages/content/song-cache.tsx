@@ -34,8 +34,10 @@ import { formatBytes } from '@/utils/formatBytes'
 
 export function SongCacheContent() {
   const { t } = useTranslation()
-  const { limitBytes, autoCacheEnabled } = useSongCacheSettings()
-  const { setLimitBytes, setAutoCacheEnabled, clear } = useSongCacheActions()
+  const { limitBytes, autoCacheEnabled, autoCacheWifiOnly } =
+    useSongCacheSettings()
+  const { setLimitBytes, setAutoCacheEnabled, setAutoCacheWifiOnly, clear } =
+    useSongCacheActions()
   const usedBytes = useSongCacheSize()
   const songCount = useCachedSongCount()
   const [isClearing, setIsClearing] = useState(false)
@@ -71,6 +73,19 @@ export function SongCacheContent() {
             <Switch
               checked={autoCacheEnabled}
               onCheckedChange={setAutoCacheEnabled}
+            />
+          </ContentItemForm>
+        </ContentItem>
+
+        <ContentItem>
+          <ContentItemTitle info={t('settings.content.songCache.wifi.info')}>
+            {t('settings.content.songCache.wifi.label')}
+          </ContentItemTitle>
+          <ContentItemForm>
+            <Switch
+              checked={autoCacheWifiOnly}
+              onCheckedChange={setAutoCacheWifiOnly}
+              disabled={!autoCacheEnabled}
             />
           </ContentItemForm>
         </ContentItem>

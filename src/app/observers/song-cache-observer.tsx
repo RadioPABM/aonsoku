@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { dropLegacyCache } from '@/cache/songs'
 import { usePlayerStore } from '@/store/player.store'
 import { useSongCacheStore } from '@/store/song-cache.store'
+import { isMeteredConnection } from '@/utils/connection'
 
 /** Half a song is enough to call it listened to. */
 const LISTENED_RATIO = 0.5
@@ -20,8 +21,13 @@ export function SongCacheObserver() {
     const unsubscribe = usePlayerStore.subscribe(
       (state) => state.playerProgress.progress,
       (progress) => {
-        const { autoCacheEnabled } = useSongCacheStore.getState().settings
+        const { autoCacheEnabled, autoCacheWifiOnly } =
+          useSongCacheStore.getState().settings
         if (!autoCacheEnabled) return
+
+        // Keeping a song means downloading it a second time, which is not
+        // something to do on someone's mobile data without being asked.
+        if (autoCacheWifiOnly && isMeteredConnection()) return
 
         const { mediaType, currentDuration } =
           usePlayerStore.getState().playerState

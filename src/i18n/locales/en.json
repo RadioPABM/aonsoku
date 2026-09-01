@@ -838,6 +838,10 @@
           "label": "Keep songs you listen to",
           "info": "Once half a song has played it is downloaded in the background. The audio already streamed cannot be reused, so the song is fetched a second time."
         },
+        "wifi": {
+          "label": "Only on Wi-Fi",
+          "info": "Keeps the automatic downloads off mobile data. Albums, playlists and artists you save by hand are always downloaded. Only Android reports the connection type; elsewhere this has no effect."
+        },
         "limit": {
           "label": "Cache limit",
           "info": "When the limit is passed, or the device runs out of room, the songs you have not played in the longest time are dropped. Albums, playlists and artists you saved on purpose are kept."

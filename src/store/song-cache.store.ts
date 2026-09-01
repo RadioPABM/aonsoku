@@ -57,6 +57,7 @@ interface ISongCacheContext {
   settings: {
     limitBytes: number
     autoCacheEnabled: boolean
+    autoCacheWifiOnly: boolean
   }
   actions: {
     hydrate: () => Promise<void>
@@ -68,6 +69,7 @@ interface ISongCacheContext {
     touch: (id: string) => void
     setLimitBytes: (value: number) => void
     setAutoCacheEnabled: (value: boolean) => void
+    setAutoCacheWifiOnly: (value: boolean) => void
   }
 }
 
@@ -148,6 +150,7 @@ export const useSongCacheStore = createWithEqualityFn<ISongCacheContext>()(
           settings: {
             limitBytes: DEFAULT_CACHE_LIMIT,
             autoCacheEnabled: true,
+            autoCacheWifiOnly: true,
           },
           actions: {
             hydrate: async () => {
@@ -323,6 +326,12 @@ export const useSongCacheStore = createWithEqualityFn<ISongCacheContext>()(
             setAutoCacheEnabled: (value) => {
               set((state) => {
                 state.settings.autoCacheEnabled = value
+              })
+            },
+
+            setAutoCacheWifiOnly: (value) => {
+              set((state) => {
+                state.settings.autoCacheWifiOnly = value
               })
             },
           },
