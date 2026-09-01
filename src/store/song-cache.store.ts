@@ -150,7 +150,7 @@ export const useSongCacheStore = createWithEqualityFn<ISongCacheContext>()(
           settings: {
             limitBytes: DEFAULT_CACHE_LIMIT,
             autoCacheEnabled: true,
-            autoCacheWifiOnly: true,
+            autoCacheWifiOnly: false,
           },
           actions: {
             hydrate: async () => {

@@ -840,7 +840,7 @@
         },
         "wifi": {
           "label": "Only on Wi-Fi",
-          "info": "Keeps the automatic downloads off mobile data. Albums, playlists and artists you save by hand are always downloaded. Only Android reports the connection type; elsewhere this has no effect."
+          "info": "Off by default. When on, the automatic downloads wait for Wi-Fi instead of spending mobile data. Albums, playlists and artists you save by hand are always downloaded. Only Android reports the connection type; elsewhere this has no effect."
         },
         "limit": {
           "label": "Cache limit",
