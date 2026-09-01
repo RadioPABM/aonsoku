@@ -2,10 +2,14 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/app/components/ui/dropdown-menu'
 
-function Harness() {
+function Harness({ onPick }: { onPick: (what: string) => void }) {
   return (
     <div className="h-[560px] w-full bg-background p-4">
       <DropdownMenu defaultOpen>
@@ -13,40 +17,62 @@ function Harness() {
           <button type="button">Open</button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem>Play next</DropdownMenuItem>
-          <DropdownMenuItem>Share</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onPick('play-next')}>
+            Play next
+          </DropdownMenuItem>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>Add to playlist</DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem onClick={() => onPick('playlist-one')}>
+                  My playlist
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
   )
 }
 
-describe('Menus on touch', () => {
-  it('fills the width and sits on the bottom edge', () => {
+describe('Menu sheet on touch', () => {
+  beforeEach(() => {
     cy.viewport(390, 560)
-    cy.mount(<Harness />)
-
-    cy.get('[data-mobile-sheet]').then(($content) => {
-      const rect = $content[0].getBoundingClientRect()
-
-      expect(rect.width, 'full width').to.be.closeTo(390, 1)
-      expect(rect.left, 'flush left').to.be.closeTo(0, 1)
-      expect(rect.bottom, 'on the bottom edge').to.be.closeTo(560, 1)
-    })
   })
 
-  it('is left alone on a pointer layout', () => {
-    cy.viewport(1100, 560)
-    cy.mount(<Harness />)
+  it('runs an item when it is tapped', () => {
+    const onPick = cy.stub().as('pick')
+    cy.mount(<Harness onPick={onPick} />)
 
-    cy.get('[data-mobile-sheet]').should('not.exist')
+    cy.contains('Play next').realClick({ pointer: 'touch' })
 
-    cy.contains('Play next')
-      .parents('[role="menu"]')
-      .then(($content) => {
-        const rect = $content[0].getBoundingClientRect()
+    cy.get('@pick').should('have.been.calledWith', 'play-next')
+  })
 
-        expect(rect.width, 'sized to its content').to.be.lessThan(400)
-      })
+  it('is tappable over the fixed bar at the same edge', () => {
+    const onPick = cy.stub().as('pick')
+
+    cy.mount(
+      <>
+        <Harness onPick={onPick} />
+        {/* What the mobile shell keeps pinned to this edge. */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 h-28 bg-background" />
+      </>,
+    )
+
+    cy.contains('Play next').realClick({ pointer: 'touch' })
+
+    cy.get('@pick').should('have.been.calledWith', 'play-next')
+  })
+
+  it('opens the submenu and runs an item inside it', () => {
+    const onPick = cy.stub().as('pick')
+    cy.mount(<Harness onPick={onPick} />)
+
+    cy.contains('Add to playlist').click()
+    cy.contains('My playlist').should('be.visible').click()
+
+    cy.get('@pick').should('have.been.calledWith', 'playlist-one')
   })
 })

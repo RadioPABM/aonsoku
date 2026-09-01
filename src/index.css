@@ -204,7 +204,10 @@ img {
   width: 100vw !important;
   min-width: 0 !important;
   transform: none !important;
-  z-index: 50;
+  /* Above the mini player and the bottom navigation, which are also fixed to
+     this edge and would otherwise take the taps meant for the menu. */
+  z-index: 60;
+  pointer-events: auto;
 }
 
 /* A sheet is reached with a thumb, so its rows are sized for one. */
