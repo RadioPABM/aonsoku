@@ -61,7 +61,12 @@ export function AlbumsMainFilter() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="min-w-0 max-w-[45vw]">
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0 min-w-0 max-w-[45vw]"
+          data-testid="albums-main-filter"
+        >
           <ListFilter className="w-4 h-4 mr-2 shrink-0" />
           <span className="truncate">{t(currentFilterLabel)}</span>
         </Button>

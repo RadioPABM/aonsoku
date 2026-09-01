@@ -53,10 +53,10 @@ export function AlbumsFilterByGenre() {
       <Button
         variant="outline"
         size="sm"
-        className="w-[220px] justify-between"
+        className="w-[220px] min-w-0 justify-between"
         disabled={true}
       >
-        {t('album.list.genre.loading')}
+        <span className="truncate">{t('album.list.genre.loading')}</span>
         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </Button>
     )
@@ -71,9 +71,11 @@ export function AlbumsFilterByGenre() {
           size="sm"
           role="combobox"
           aria-expanded={open}
-          className="w-[220px] justify-between"
+          className="w-[220px] min-w-0 justify-between"
         >
-          {!genre ? t('album.list.genre.label') : genre}
+          <span className="truncate">
+            {!genre ? t('album.list.genre.label') : genre}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
