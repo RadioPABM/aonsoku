@@ -163,7 +163,9 @@ function FeaturedEpisodeCardAction({ episode }: FeaturedEpisodeCardProps) {
   return (
     <ActionButton onClick={handlePlayEpisode} episode={episode}>
       <div className="flex gap-2 items-center">
-        <div className="min-w-8 w-full h-1 rounded-full relative bg-background/50 overflow-hidden">
+        {/* Track and fill are both derived from the on-primary colour, so the
+            bar stays visible whichever way round a theme defines it. */}
+        <div className="min-w-8 w-full h-1 rounded-full relative bg-primary-foreground/25 overflow-hidden">
           <div
             className="absolute z-10 bg-primary-foreground h-full"
             style={{ width: `${listeningProgressPercentage}%` }}

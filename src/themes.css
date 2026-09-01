@@ -6,30 +6,32 @@
   }
 
   /*
-   * Built from the logo: the #060E23 navy the mark sits on, the #32AD78 green
-   * of the mark itself, and the #2DAC5C the backdrop gradient fades out to.
+   * Built from the logo: the navy the mark sits on, taken deeper for the
+   * grounds, and the green of the mark itself pushed brighter and further
+   * towards lime so it carries the accents. Surfaces are tinted with that
+   * green rather than staying neutral slate.
    */
   .radiopabm {
-    --background: 223 71% 8%;
-    --background-foreground: 223 50% 11%;
-    --foreground: 210 25% 96%;
-    --card: 223 60% 10%;
-    --card-foreground: 210 25% 96%;
-    --popover: 223 60% 10%;
-    --popover-foreground: 210 25% 96%;
-    --primary: 154 55% 44%;
-    --primary-foreground: 210 25% 96%;
-    --secondary: 220 32% 18%;
-    --secondary-foreground: 210 25% 96%;
-    --muted: 220 32% 14%;
-    --muted-foreground: 215 18% 68%;
-    --accent: 220 32% 20%;
-    --accent-foreground: 210 25% 96%;
-    --destructive: 0 62.8% 34%;
-    --destructive-foreground: 210 25% 96%;
-    --border: 220 30% 19%;
-    --input: 220 30% 19%;
-    --ring: 142 58% 43%;
+    --background: 224 68% 5%;
+    --background-foreground: 220 45% 7%;
+    --foreground: 150 15% 96%;
+    --card: 221 50% 7%;
+    --card-foreground: 150 15% 96%;
+    --popover: 221 50% 7%;
+    --popover-foreground: 150 15% 96%;
+    --primary: 146 63% 52%;
+    --primary-foreground: 224 68% 6%;
+    --secondary: 165 22% 15%;
+    --secondary-foreground: 150 15% 96%;
+    --muted: 200 28% 11%;
+    --muted-foreground: 160 12% 68%;
+    --accent: 165 25% 18%;
+    --accent-foreground: 150 20% 96%;
+    --destructive: 0 63% 38%;
+    --destructive-foreground: 150 15% 96%;
+    --border: 165 22% 18%;
+    --input: 165 22% 18%;
+    --ring: 140 70% 58%;
   }
 
   .light {
