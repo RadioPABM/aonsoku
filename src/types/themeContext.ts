@@ -1,4 +1,5 @@
 export enum Theme {
+  RadioPabm = 'radiopabm',
   Light = 'light',
   Dark = 'dark',
   Black = 'black',

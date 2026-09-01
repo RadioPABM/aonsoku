@@ -43,6 +43,7 @@
   },
   "theme": {
     "label": "Theme",
+    "radiopabm": "radioPABM",
     "light": "Light",
     "dark": "Dark",
     "system": "System",

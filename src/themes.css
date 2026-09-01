@@ -5,6 +5,33 @@
     --radius: 0.5rem;
   }
 
+  /*
+   * Built from the logo: the #060E23 navy the mark sits on, the #32AD78 green
+   * of the mark itself, and the #2DAC5C the backdrop gradient fades out to.
+   */
+  .radiopabm {
+    --background: 223 71% 8%;
+    --background-foreground: 223 50% 11%;
+    --foreground: 210 25% 96%;
+    --card: 223 60% 10%;
+    --card-foreground: 210 25% 96%;
+    --popover: 223 60% 10%;
+    --popover-foreground: 210 25% 96%;
+    --primary: 154 55% 44%;
+    --primary-foreground: 210 25% 96%;
+    --secondary: 220 32% 18%;
+    --secondary-foreground: 210 25% 96%;
+    --muted: 220 32% 14%;
+    --muted-foreground: 215 18% 68%;
+    --accent: 220 32% 20%;
+    --accent-foreground: 210 25% 96%;
+    --destructive: 0 62.8% 34%;
+    --destructive-foreground: 210 25% 96%;
+    --border: 220 30% 19%;
+    --input: 220 30% 19%;
+    --ring: 142 58% 43%;
+  }
+
   .light {
     --background: 0 0% 100%;
     --background-foreground: 210 20% 98%;

@@ -43,6 +43,7 @@
   },
   "theme": {
     "label": "Тема",
+    "radiopabm": "radioPABM",
     "light": "Світла",
     "dark": "Темна",
     "system": "Як у системі",
