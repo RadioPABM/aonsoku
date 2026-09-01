@@ -384,17 +384,21 @@ export function DataTable<TData, TValue>({
       if (!endTap()) return
       if (!isRowGesture(e.target)) return
 
+      // The browser synthesizes a click after this touch, and that click runs
+      // the row's own onClick, which would navigate a second time. Only
+      // preventDefault suppresses it; stopPropagation does not, because both
+      // handlers sit on this same element.
+      e.preventDefault()
+
       // A tap is the touch equivalent of a single click, so it opens the row's
       // page when it has one. Playing stays on the double click and on the
       // rows that have nowhere to navigate to, like songs and radios.
       if (onRowClick) {
-        e.stopPropagation()
         onRowClick(row)
         return
       }
 
       if (handlePlaySong && isPlayGesture(e.target, e.currentTarget)) {
-        e.stopPropagation()
         handlePlaySong(row)
       }
     },

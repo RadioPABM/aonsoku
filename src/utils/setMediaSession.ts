@@ -179,28 +179,30 @@ function setPositionState({ duration, position, playbackRate }: PositionState) {
 }
 
 function setHandlers() {
-  const { togglePlayPause, playNextSong, playPrevSong } =
+  const { setPlayingState, playNextSong, playPrevSong } =
     usePlayerStore.getState().actions
 
   applyActionHandler('seekbackward', () => seekBy(-15))
   applyActionHandler('seekforward', () => seekBy(30))
   applyActionHandler('seekto', ({ seekTime }) => seekTo(seekTime))
-  applyActionHandler('play', () => togglePlayPause())
-  applyActionHandler('pause', () => togglePlayPause())
+  // These are commands, not a toggle: Android sends play on its own after a
+  // call ends or a headset reconnects, and a toggle would pause instead.
+  applyActionHandler('play', () => setPlayingState(true))
+  applyActionHandler('pause', () => setPlayingState(false))
   applyActionHandler('previoustrack', () => playPrevSong())
   applyActionHandler('nexttrack', () => playNextSong())
 }
 
 function setRadioHandlers() {
-  const { togglePlayPause } = usePlayerStore.getState().actions
+  const { setPlayingState } = usePlayerStore.getState().actions
 
   applyActionHandler('seekbackward', null)
   applyActionHandler('seekforward', null)
   applyActionHandler('seekto', null)
   applyActionHandler('previoustrack', null)
   applyActionHandler('nexttrack', null)
-  applyActionHandler('play', () => togglePlayPause())
-  applyActionHandler('pause', () => togglePlayPause())
+  applyActionHandler('play', () => setPlayingState(true))
+  applyActionHandler('pause', () => setPlayingState(false))
 }
 
 function setPodcastHandlers() {

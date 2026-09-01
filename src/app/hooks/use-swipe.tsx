@@ -42,8 +42,10 @@ export function useSwipe({
 
   const [offset, setOffset] = useState(0)
   const [phase, setPhase] = useState<Phase>('idle')
+  const settleTimeout = useRef<ReturnType<typeof setTimeout>>()
 
   const reset = useCallback(() => {
+    clearTimeout(settleTimeout.current)
     start.current = null
     direction.current = 'none'
     committed.current = null
@@ -65,6 +67,19 @@ export function useSwipe({
     },
     [disabled, phase],
   )
+
+  const finishSettle = useCallback(() => {
+    clearTimeout(settleTimeout.current)
+
+    const direction = committed.current
+    committed.current = null
+
+    setPhase('idle')
+    setOffset(0)
+
+    if (direction === 'left') onSwipeLeft?.()
+    if (direction === 'right') onSwipeRight?.()
+  }, [onSwipeLeft, onSwipeRight])
 
   const onTouchMove = useCallback(
     (event: React.TouchEvent<HTMLElement>) => {
@@ -123,17 +138,27 @@ export function useSwipe({
 
       start.current = null
       direction.current = 'none'
-      setPhase('settling')
 
-      if (goesLeft || goesRight) {
-        committed.current = goesLeft ? 'left' : 'right'
-        setOffset(goesLeft ? -width.current : width.current)
+      const target = goesLeft ? -width.current : goesRight ? width.current : 0
+
+      // Settling to where it already sits animates nothing, so no
+      // transitionend would arrive to end the phase and the gesture would
+      // never come back to life.
+      if (target === offset) {
+        reset()
         return
       }
 
-      setOffset(0)
+      committed.current = goesLeft ? 'left' : goesRight ? 'right' : null
+      setPhase('settling')
+      setOffset(target)
+
+      // A transition can also be dropped: a hidden element, a compositor that
+      // skipped it. The phase must not outlive the animation either way.
+      clearTimeout(settleTimeout.current)
+      settleTimeout.current = setTimeout(finishSettle, SETTLE_MS + 80)
     },
-    [canSwipeLeft, canSwipeRight, reset],
+    [canSwipeLeft, canSwipeRight, finishSettle, offset, reset],
   )
 
   /**
@@ -149,16 +174,9 @@ export function useSwipe({
       if (event.target !== event.currentTarget) return
       if (phase !== 'settling') return
 
-      const direction = committed.current
-      committed.current = null
-
-      setPhase('idle')
-      setOffset(0)
-
-      if (direction === 'left') onSwipeLeft?.()
-      if (direction === 'right') onSwipeRight?.()
+      finishSettle()
     },
-    [onSwipeLeft, onSwipeRight, phase],
+    [finishSettle, phase],
   )
 
   return {

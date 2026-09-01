@@ -1017,8 +1017,22 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
 idbStorage.getItem<ISongList>(miniStores.songlist, (value) => {
   if (!value) return
 
+  const { songlist } = usePlayerStore.getState()
+  const hasQueue =
+    songlist.currentList.length > 0 ||
+    songlist.radioList.length > 0 ||
+    songlist.podcastList.length > 0
+
+  // The read is asynchronous, so the user may have started something in the
+  // meantime. Restoring on top of that would splice the two queues together
+  // and move the index into the middle of the result.
+  if (hasQueue) return
+
   usePlayerStore.setState((state) => {
-    state.songlist = merge(state.songlist, value)
+    // Assigned wholesale rather than merged: lodash merges arrays by index,
+    // which grafts the saved queue onto whatever is already there instead of
+    // replacing it.
+    state.songlist = { ...state.songlist, ...value }
   })
 })
 

@@ -16,8 +16,9 @@ import { ensureSupportForAlac } from '@/utils/alac'
  */
 export function useSongSource(song: ISong | undefined) {
   const mediaCacheEnabled = useAppMediaCache()
-  const { touch } = useSongCacheActions()
+  const { touch, removeSongs } = useSongCacheActions()
   const [blobUrl, setBlobUrl] = useState<string>()
+  const [blobMissing, setBlobMissing] = useState(false)
 
   const songId = song?.id
   const playsFromCache = useMemo(
@@ -39,6 +40,8 @@ export function useSongSource(song: ISong | undefined) {
   }, [songId, song, mediaCacheEnabled])
 
   useEffect(() => {
+    setBlobMissing(false)
+
     if (!songId || !playsFromCache) {
       setBlobUrl(undefined)
       return
@@ -48,7 +51,16 @@ export function useSongSource(song: ISong | undefined) {
     let objectUrl: string | undefined
 
     readSongBlob(songId).then((blob) => {
-      if (!blob || cancelled) return
+      if (cancelled) return
+
+      if (!blob) {
+        // The index claims a copy that is not there any more. Forget it and
+        // let the server serve the song, rather than leaving the player with
+        // no source at all and no way to say so.
+        setBlobMissing(true)
+        removeSongs([songId])
+        return
+      }
 
       objectUrl = URL.createObjectURL(blob)
       setBlobUrl(objectUrl)
@@ -60,7 +72,7 @@ export function useSongSource(song: ISong | undefined) {
       setBlobUrl(undefined)
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [songId, playsFromCache, touch])
+  }, [songId, playsFromCache, touch, removeSongs])
 
-  return playsFromCache ? blobUrl : streamUrl
+  return playsFromCache && !blobMissing ? blobUrl : streamUrl
 }
