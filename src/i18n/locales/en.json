@@ -832,7 +832,7 @@
         },
         "limit": {
           "label": "Cache limit",
-          "info": "When the limit is passed, the songs you have not played in the longest time are dropped. Albums, playlists and artists you saved on purpose are kept."
+          "info": "When the limit is passed, or the device runs out of room, the songs you have not played in the longest time are dropped. Albums, playlists and artists you saved on purpose are kept."
         },
         "usage": "{{used}} used by {{songs}} songs",
         "clear": {

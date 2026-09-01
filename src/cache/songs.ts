@@ -52,11 +52,21 @@ export async function readSongBlob(id: string) {
   }
 }
 
+/**
+ * Whether a failed write means the device is out of room for us, rather than
+ * something being broken.
+ */
+export function isQuotaError(error: unknown) {
+  const name = (error as { name?: string } | null)?.name
+
+  return name === 'QuotaExceededError' || name === 'NS_ERROR_DOM_QUOTA_REACHED'
+}
+
 export async function writeSong(
   id: string,
   blob: Blob,
   pinned: boolean,
-): Promise<CachedSong | undefined> {
+): Promise<CachedSong> {
   const now = Date.now()
   const entry: CachedSong = {
     id,
@@ -73,12 +83,10 @@ export async function writeSong(
 
     return entry
   } catch (error) {
-    // Running out of quota lands here; the blob may be half written, so the
-    // metadata is dropped to keep the index honest.
-    logger.error('[songCache] - Could not store a song', { id, error })
+    // A half written blob would count against the quota without anything in
+    // the index pointing at it, so it goes before the error travels on.
     await removeSong(id)
-
-    return undefined
+    throw error
   }
 }
 
@@ -117,6 +125,12 @@ export async function clearSongCache() {
   }
 }
 
+function leastRecentlyUsed(entries: CachedSong[]) {
+  return entries
+    .filter((entry) => !entry.pinned)
+    .sort((a, b) => a.lastUsedAt - b.lastUsedAt)
+}
+
 /**
  * Picks the entries to drop so the cache fits the limit again. Pinned songs
  * are never chosen, so a limit smaller than what was saved on purpose leaves
@@ -127,15 +141,30 @@ export function selectEvictions(entries: CachedSong[], limitBytes: number) {
 
   if (total <= limitBytes) return []
 
-  const candidates = entries
-    .filter((entry) => !entry.pinned)
-    .sort((a, b) => a.lastUsedAt - b.lastUsedAt)
-
   const evictions: CachedSong[] = []
   let freed = 0
 
-  for (const entry of candidates) {
+  for (const entry of leastRecentlyUsed(entries)) {
     if (total - freed <= limitBytes) break
+
+    evictions.push(entry)
+    freed += entry.size
+  }
+
+  return evictions
+}
+
+/**
+ * Picks the entries to drop to free at least this many bytes, oldest use
+ * first. Used when the device refuses a write, where the limit says nothing
+ * about how much room is actually left.
+ */
+export function selectLeastUsed(entries: CachedSong[], bytesNeeded: number) {
+  const evictions: CachedSong[] = []
+  let freed = 0
+
+  for (const entry of leastRecentlyUsed(entries)) {
+    if (freed >= bytesNeeded) break
 
     evictions.push(entry)
     freed += entry.size

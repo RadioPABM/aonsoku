@@ -6,9 +6,11 @@ import { getSongStreamUrl } from '@/api/httpClient'
 import {
   CachedSong,
   clearSongCache,
+  isQuotaError,
   readCachedSongs,
   removeSong,
   selectEvictions,
+  selectLeastUsed,
   updateSongMeta,
   writeSong,
 } from '@/cache/songs'
@@ -24,6 +26,15 @@ export const CACHE_LIMIT_OPTIONS = [1, 2, 5, 10, 20].map(
 
 /** Saving a whole album should not take the server hostage. */
 const MAX_PARALLEL_DOWNLOADS = 3
+
+/** How many rounds of making room a single song is worth. */
+const MAX_QUOTA_RETRIES = 4
+
+/**
+ * Freeing exactly what one song needs would mean evicting again for the next
+ * one, so each round asks for a few songs worth of room.
+ */
+const QUOTA_HEADROOM = 4
 
 export interface CacheJob {
   total: number
@@ -174,13 +185,11 @@ export const useSongCacheStore = createWithEqualityFn<ISongCacheContext>()(
                 async (song) => {
                   try {
                     const blob = await fetchSongBlob(song)
-                    const entry = await writeSong(song.id, blob, pinned)
+                    const entry = await storeSong(song.id, blob, pinned)
 
-                    if (entry) {
-                      set((state) => {
-                        state.entries[song.id] = entry
-                      })
-                    }
+                    set((state) => {
+                      state.entries[song.id] = entry
+                    })
 
                     if (jobId) {
                       set((state) => {
@@ -301,6 +310,45 @@ export const useSongCacheStore = createWithEqualityFn<ISongCacheContext>()(
     ),
   ),
 )
+
+/**
+ * Frees at least this many bytes by dropping the songs left unplayed the
+ * longest. Songs saved on purpose are never among them, so a device filled
+ * with pinned music reports back that it freed nothing.
+ */
+async function freeSpace(bytesNeeded: number) {
+  const { entries, actions } = useSongCacheStore.getState()
+  const evictions = selectLeastUsed(Object.values(entries), bytesNeeded)
+
+  if (evictions.length === 0) return 0
+
+  await actions.removeSongs(evictions.map((entry) => entry.id))
+
+  return evictions.reduce((sum, entry) => sum + entry.size, 0)
+}
+
+/**
+ * Stores a song, making room for it when the device says there is none. The
+ * configured limit is only half the story: the browser hands out a quota of
+ * its own, and hitting it has to clear space rather than fail.
+ */
+async function storeSong(id: string, blob: Blob, pinned: boolean) {
+  for (let attempt = 0; attempt <= MAX_QUOTA_RETRIES; attempt++) {
+    try {
+      return await writeSong(id, blob, pinned)
+    } catch (error) {
+      if (!isQuotaError(error) || attempt === MAX_QUOTA_RETRIES) throw error
+
+      const freed = await freeSpace(blob.size * QUOTA_HEADROOM)
+
+      if (freed === 0) throw error
+
+      logger.info('[songCache] - Freed space for a song', { id, freed })
+    }
+  }
+
+  throw new Error('Unreachable')
+}
 
 async function evictOverLimit() {
   const { entries, settings } = useSongCacheStore.getState()
