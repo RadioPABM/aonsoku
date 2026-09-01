@@ -64,6 +64,22 @@ describe('DataTable row gestures', () => {
     cy.get('@play').should('not.have.been.called')
   })
 
+  it('does not play the song when the row is double clicked outside the title', () => {
+    mountTable()
+
+    cy.get(ROW).first().find('[role="cell"]').first().dblclick()
+
+    cy.get('@play').should('not.have.been.called')
+  })
+
+  it('plays the song when the title block is double clicked', () => {
+    mountTable()
+
+    cy.get(ROW).first().find(PLAY_TARGET).first().dblclick()
+
+    cy.get('@play').should('have.been.calledOnce')
+  })
+
   it('does not play the song when the like button is double clicked', () => {
     mountTable()
 

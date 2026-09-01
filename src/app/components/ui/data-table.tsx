@@ -369,7 +369,10 @@ export function DataTable<TData, TValue>({
 
   const handleRowDbClick = useCallback(
     (e: MouseEvent<HTMLDivElement>, row: Row<TData>) => {
-      if (!isRowGesture(e.target)) return
+      // The same rule as a tap: only the part of the row that stands for the
+      // song itself starts it. The duration, the empty space beside it and
+      // every control are inert.
+      if (!isPlayGesture(e.target, e.currentTarget)) return
 
       if (handlePlaySong) {
         e.stopPropagation()
