@@ -144,7 +144,13 @@ interface IColorsSettings {
   queue: IQueueSettings
 }
 
+interface IPlaybackSettings {
+  autoplayRecommended: boolean
+  setAutoplayRecommended: (value: boolean) => void
+}
+
 export interface IPlayerSettings {
+  playback: IPlaybackSettings
   volume: IVolumeSettings
   fullscreen: IFullscreen
   lyrics: ILyrics
@@ -191,6 +197,7 @@ export interface IPlayerActions {
   setAudioPlayerRef: (ref: HTMLAudioElement) => void
   setNextOnQueue: (songlist: ISong[]) => void
   setLastOnQueue: (songlist: ISong[]) => void
+  appendToQueue: (songlist: ISong[]) => void
   removeSongFromQueue: (id: string) => void
   setMainDrawerState: (state: boolean) => void
   setQueueState: (state: boolean) => void

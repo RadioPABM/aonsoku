@@ -715,6 +715,14 @@
           "label": "Prefer synced lyrics",
           "info": "When enabled, synced lyrics will be prioritized over unsynced lyrics."
         }
+      },
+      "playback": {
+        "group": "Playback",
+        "description": "Control how the queue behaves while it plays.",
+        "recommended": {
+          "label": "Play recommended songs",
+          "info": "When the last song in the queue starts playing, songs the server finds similar to it are added after it, so playback carries on past the end of an album. Off while the queue is set to repeat."
+        }
       }
     },
     "privacy": {

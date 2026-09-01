@@ -3,6 +3,7 @@ import {
   FavoritesResponse,
   GetSongResponse,
   RandomSongsResponse,
+  SimilarSongsResponse,
   TopSongsResponse,
 } from '@/types/responses/song'
 import { search } from './search'
@@ -52,6 +53,22 @@ async function getTopSongs(artistName: string) {
   return response?.data.topSongs.song
 }
 
+/**
+ * Songs the server considers close to this one. Servers that cannot answer
+ * return an empty list rather than an error, so callers get nothing to add.
+ */
+async function getSimilarSongs(id: string, count: number) {
+  const response = await httpClient<SimilarSongsResponse>('/getSimilarSongs', {
+    method: 'GET',
+    query: {
+      id,
+      count: count.toString(),
+    },
+  })
+
+  return response?.data.similarSongs?.song ?? []
+}
+
 async function getAllSongs(songCount: number) {
   const response = await search.get({
     query: '',
@@ -77,6 +94,7 @@ async function getSong(id: string) {
 
 export const songs = {
   getAllSongs,
+  getSimilarSongs,
   getFavoriteSongs,
   getRandomSongs,
   getTopSongs,

@@ -89,6 +89,14 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
             accumulated: 0,
           },
           settings: {
+            playback: {
+              autoplayRecommended: true,
+              setAutoplayRecommended: (value) => {
+                set((state) => {
+                  state.settings.playback.autoplayRecommended = value
+                })
+              },
+            },
             privacy: {
               lrclib: {
                 enabled: true,
@@ -317,6 +325,25 @@ export const usePlayerStore = createWithEqualityFn<IPlayerContext>()(
               if (!isPlaying) {
                 get().actions.setPlayingState(true)
               }
+            },
+            /**
+             * Adds songs to the end of the queue and does nothing else. Unlike
+             * setLastOnQueue it leaves the playing state and the playback
+             * source alone, because the queue is being extended on the
+             * player's own initiative rather than by a request from the user.
+             */
+            appendToQueue: (list) => {
+              const { currentList } = get().songlist
+
+              const known = new Set(currentList.map((song) => song.id))
+              const uniqueList = list.filter((song) => !known.has(song.id))
+
+              if (uniqueList.length === 0) return
+
+              set((state) => {
+                state.songlist.currentList.push(...uniqueList)
+                state.songlist.originalList.push(...uniqueList)
+              })
             },
             setLastOnQueue: (list) => {
               const { currentList, originalList } = get().songlist
@@ -1227,6 +1254,9 @@ export const useFullscreenPlayerSettings = () =>
 
 export const useLrcLibSettings = () =>
   usePlayerStore((state) => state.settings.privacy.lrclib)
+
+export const usePlaybackSettings = () =>
+  usePlayerStore((state) => state.settings.playback)
 
 export const useLyricsSettings = () =>
   usePlayerStore((state) => state.settings.lyrics)
