@@ -6,7 +6,22 @@ import { useIsMobile } from '@/app/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { SHEET_CLASSES } from './menu-sheet'
 
-const DropdownMenu = DropdownMenuPrimitive.Root
+/**
+ * Not modal on touch, where the menu is a sheet along the bottom edge.
+ *
+ * Modal mode takes pointer events away from the page and hands them back only
+ * to the layer Radix considers topmost, which the long-press menu avoids by
+ * being non-modal — and that is the one that kept working once the menus were
+ * moved out of their popper position.
+ */
+function DropdownMenu({
+  modal,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Root>) {
+  const isMobile = useIsMobile()
+
+  return <DropdownMenuPrimitive.Root modal={modal ?? !isMobile} {...props} />
+}
 
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
 
